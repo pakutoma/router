@@ -1,10 +1,11 @@
-unsigned short calc_checksum(unsigned char *header, int length) {
-    unsigned int sum;
-    unsigned short *ptr = (unsigned short *)header;
-    int i;
+#include <stdint.h>
+unsigned short calc_checksum(uint8_t *header, int32_t length) {
+    uint32_t sum;
+    uint16_t *ptr = (uint16_t *)header;
+    int32_t i;
 
     sum = 0;
-    ptr = (unsigned short *)header;
+    ptr = (uint16_t *)header;
 
     for (i = 0; i < length; i += 2) {
         sum += (*ptr);
@@ -21,6 +22,6 @@ unsigned short calc_checksum(unsigned char *header, int length) {
     return (~sum);
 }
 
-unsigned short update_checksum(unsigned short checksum, unsigned short original_value, unsigned short new_value) {
+uint16_t update_checksum(uint16_t checksum, uint16_t original_value, uint16_t new_value) {
     return checksum + (new_value - original_value);
 }

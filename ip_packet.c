@@ -43,7 +43,6 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
     } else {
         send_packet(ether_frame, devices[out_device_index].hw_addr, devices[in_device_index].addr.s_addr, header->daddr);
     }
-    // TODO: find_device_*書いてない
 }
 
 void send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint32_t origin_device_ipaddr, uint32_t neighbor_ipaddr) {
