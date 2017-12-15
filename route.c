@@ -1,8 +1,9 @@
+#include "arp_table.h"
 #include "arp_waiting_list.h"
 #include "device.h"
 #include "ether_frame.h"
+#include "ip_packet.h"
 #include "log.h"
-#include <arp_table.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <netinet/in.h>
@@ -14,9 +15,8 @@ static int is_end = 0;
 
 void end_signal(int signal);
 
-void route(device_t devices[2], char *next_router_addr) {
+int route(device_t devices[2], char *next_router_addr) {
     ether_frame_t *received_frame;
-    int dst_ip_addr;
     int size;
     struct in_addr next_router;
 
@@ -54,11 +54,11 @@ void route(device_t devices[2], char *next_router_addr) {
                 break;
             case ETHERTYPE_ARP:
                 log_stdout("ETHERTYPE: ARP\n");
-                process_arp_packet(received_frame);
+                //process_arp_packet(received_frame);
                 break;
             case ETHERTYPE_IPV6:
                 log_stdout("ETHERTYPE: IPv6\n");
-                process_ipv6_packet(received_frame);
+                //process_ipv6_packet(received_frame);
                 break;
             default:
                 log_stdout("ETHERTYPE: UNKNOWN\n");
@@ -69,6 +69,7 @@ void route(device_t devices[2], char *next_router_addr) {
         //free(received_frame->payload);
         //free(received_frame);
     }
+    return 0;
 }
 
 void end_signal(int signal) {

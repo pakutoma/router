@@ -1,4 +1,4 @@
-OBJS=main.o device_init.o router.o log.o ether_frame.o
+OBJS=main.o device_init.o route.o log.o ether_frame.o arp_table.o arp_waiting_list.o create_arp.o create_icmp.o send_queue.o ip_packet.o checksum.o
 SRCS=$(OBJS:%.o=%.c)
 CFLAGS=-g -Wall
 TARGET=router

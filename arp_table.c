@@ -5,17 +5,19 @@
 #include <string.h>
 #include <time.h>
 #define ARP_TABLE_TIMEOUT 120
-typedef struct {
-    ip_mac_node *next;
+typedef struct ip_mac_node {
+    struct ip_mac_node *next;
     unsigned int ipaddr;
     unsigned char macaddr[ETH_ALEN];
     time_t creation_time;
-} ip_mac_node;
+} ip_mac_node_t;
 
-static ip_mac_node *head = NULL;
+void remove_timeout_cache();
+
+static ip_mac_node_t *head = NULL;
 
 int init_arp_table() {
-    if ((head = malloc(sizeof(ip_mac_node))) == NULL) {
+    if ((head = malloc(sizeof(ip_mac_node_t))) == NULL) {
         log_perror("malloc");
         return -1;
     }
@@ -24,8 +26,8 @@ int init_arp_table() {
 }
 
 int register_arp_table(unsigned int ipaddr, unsigned char macaddr[ETH_ALEN]) {
-    ip_mac_node *new_node;
-    if ((new_node = malloc(sizeof(ip_mac_node))) == NULL) {
+    ip_mac_node_t *new_node;
+    if ((new_node = malloc(sizeof(ip_mac_node_t))) == NULL) {
         log_perror("malloc");
         return -1;
     }
@@ -38,7 +40,7 @@ int register_arp_table(unsigned int ipaddr, unsigned char macaddr[ETH_ALEN]) {
 
 int find_macaddr(unsigned int ipaddr, unsigned char macaddr[ETH_ALEN]) {
     remove_timeout_cache();
-    ip_mac_node *node = head->next;
+    ip_mac_node_t *node = head->next;
     while (node != NULL) {
         if (node->ipaddr == ipaddr) {
             memcpy(macaddr, node->macaddr, sizeof(unsigned char) * ETH_ALEN);
@@ -49,8 +51,8 @@ int find_macaddr(unsigned int ipaddr, unsigned char macaddr[ETH_ALEN]) {
 }
 
 void remove_timeout_cache() {
-    ip_mac_node *node = head;
-    ip_mac_node *obsolete_node = NULL;
+    ip_mac_node_t *node = head;
+    ip_mac_node_t *obsolete_node = NULL;
     time_t now = time(NULL);
     while (node->next != NULL) {
         if ((now - node->next->creation_time) > ARP_TABLE_TIMEOUT) {

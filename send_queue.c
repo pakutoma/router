@@ -32,5 +32,5 @@ ether_frame_t *dequeue_send_queue() {
     } else {
         head++;
     }
-    return head;
+    return data;
 }
