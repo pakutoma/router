@@ -4,6 +4,7 @@
 #include "ether_frame.h"
 #include "ip_packet.h"
 #include "log.h"
+#include "send_queue.h"
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <netinet/in.h>
@@ -43,10 +44,11 @@ int route(device_t devices[2], char *next_router_addr) {
     }
 
     while (!is_end) {
-        if ((size = get_ethernet_frame(sockets, &received_frame)) <= 0) {
+        if ((size = receive_ethernet_frame(sockets, &received_frame)) <= 0) {
             continue;
         }
-
+        print_waiting_list();
+        print_send_queue();
         switch (ntohs(received_frame->header.ether_type)) {
             case ETHERTYPE_IP:
                 log_stdout("ETHERTYPE: IP\n");
@@ -65,6 +67,7 @@ int route(device_t devices[2], char *next_router_addr) {
                 break;
         }
 
+        //send_ethernet_frame();
         //使用されないはず
         //free(received_frame->payload);
         //free(received_frame);

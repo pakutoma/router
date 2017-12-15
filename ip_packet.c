@@ -66,7 +66,7 @@ int send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint3
         if ((arp_frame = create_arp_request(ether_frame, origin_device_ipaddr, neighbor_ipaddr)) == NULL) {
             return -1;
         }
-        enqueue_send_queue(create_arp_request(ether_frame, origin_device_ipaddr, neighbor_ipaddr));
+        enqueue_send_queue(arp_frame);
         memcpy(ether_frame->header.ether_shost, src_macaddr, sizeof(uint8_t) * ETH_ALEN);
         add_arp_waiting_list(ether_frame, neighbor_ipaddr);
     } else {
@@ -109,7 +109,7 @@ int find_recieved_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_D
 int find_device_neighbor_network(uint32_t ipaddr, device_t devices[NUMBER_OF_DEVICES]) {
     int i;
     for (i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (devices[i].addr.s_addr == ipaddr) {
+        if (devices[i].subnet.s_addr == (ipaddr & devices[i].netmask.s_addr)) {
             return i;
         }
     }

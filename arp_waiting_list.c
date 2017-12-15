@@ -2,6 +2,7 @@
 #include "log.h"
 #include "send_queue.h"
 #include <net/ethernet.h>
+#include <netinet/ip.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,4 +50,16 @@ void send_waiting_ethernet_frame_matching_ipaddr(unsigned int ipaddr, unsigned c
             }
         }
     }
+}
+
+void print_waiting_list() {
+    arp_waiting_node_t *node = head->next;
+    log_stdout("---%s---\n", __func__);
+    uint8_t *ptr;
+    while (node != NULL) {
+        ptr = (uint8_t *)&((struct iphdr *)node->ether_frame->payload)->daddr;
+        log_stdout("%d.%d.%d.%d\n", ptr[0], ptr[1], ptr[2], ptr[3]);
+        node = node->next;
+    }
+    log_stdout("---end %s---\n", __func__);
 }

@@ -10,4 +10,4 @@ typedef struct {
 
 } ether_frame_t;
 
-int get_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame);
+int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame);

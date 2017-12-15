@@ -13,7 +13,7 @@
 
 int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_SIZE], int size, ether_frame_t **received_frame);
 
-int get_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame) {
+int recieve_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame) {
     int size;
     int status;
     int i;
