@@ -114,7 +114,6 @@ int pack_ethernet_frame(unsigned char **data, ether_frame_t *sending_frame) {
         size = ETHERNET_FRAME_LOWER_LIMIT_SIZE;
     }
 
-    log_stdout("%d\n", size);
     if ((*data = calloc(size, sizeof(uint8_t))) == NULL) {
         log_perror("calloc");
         return -1;
