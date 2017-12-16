@@ -23,7 +23,7 @@ int init_arp_waiting_list() {
     return 0;
 }
 
-int add_arp_waiting_list(ether_frame_t *ether_frame, unsigned int neighbor_ipaddr) {
+int add_arp_waiting_list(ether_frame_t *ether_frame, uint32_t neighbor_ipaddr) {
     arp_waiting_node_t *new_node;
     if ((new_node = malloc(sizeof(arp_waiting_node_t))) == NULL) {
         log_perror("malloc");
@@ -36,19 +36,20 @@ int add_arp_waiting_list(ether_frame_t *ether_frame, unsigned int neighbor_ipadd
     return 0;
 }
 
-void send_waiting_ethernet_frame_matching_ipaddr(unsigned int ipaddr, unsigned char macaddr[ETH_ALEN]) {
+void send_waiting_ethernet_frame_matching_ipaddr(uint32_t ipaddr, uint8_t macaddr[ETH_ALEN]) {
     arp_waiting_node_t *node = head;
     arp_waiting_node_t *sending_node = NULL;
     while (node->next != NULL) {
         if (node->next->neighbor_ipaddr == ipaddr) {
             sending_node = node->next;
             node->next = node->next->next;
-            memcpy(sending_node->ether_frame->header.ether_dhost, macaddr, sizeof(unsigned char) * ETH_ALEN);
+            memcpy(sending_node->ether_frame->header.ether_dhost, macaddr, sizeof(uint8_t) * ETH_ALEN);
             enqueue_send_queue(sending_node->ether_frame);
             if (node->next == NULL) {
                 return;
             }
         }
+        node = node->next;
     }
 }
 

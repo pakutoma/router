@@ -20,11 +20,7 @@ unsigned short calc_checksum(uint8_t *header, int32_t length) {
         sum = (sum & 0xFFFF) + (sum >> 16);
     }
 
-    return (~sum);
-}
-
-uint16_t update_checksum(uint16_t checksum, uint16_t original_value, uint16_t new_value) {
-    return checksum + (new_value - original_value);
+    return ~sum;
 }
 
 uint32_t calc_fcs(uint8_t *data, int32_t length) {
@@ -32,5 +28,5 @@ uint32_t calc_fcs(uint8_t *data, int32_t length) {
     for (; length--; data++) {
         crc = ((crc >> 8) & 0x00FFFFFF) ^ crc32_table[(crc ^ (*data)) & 0xFF];
     }
-    return crc ^ 0xFFFFFFFF;
+    return ~crc;
 }

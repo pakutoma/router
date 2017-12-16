@@ -1,3 +1,4 @@
+#include "arp_packet.h"
 #include "arp_table.h"
 #include "arp_waiting_list.h"
 #include "device.h"
@@ -49,6 +50,7 @@ int route(device_t devices[2], char *next_router_addr) {
         }
         print_waiting_list();
         print_send_queue();
+        print_arp_table();
         switch (ntohs(received_frame->header.ether_type)) {
             case ETHERTYPE_IP:
                 log_stdout("ETHERTYPE: IP\n");
@@ -56,7 +58,7 @@ int route(device_t devices[2], char *next_router_addr) {
                 break;
             case ETHERTYPE_ARP:
                 log_stdout("ETHERTYPE: ARP\n");
-                //process_arp_packet(received_frame);
+                process_arp_packet(received_frame);
                 break;
             case ETHERTYPE_IPV6:
                 log_stdout("ETHERTYPE: IPv6\n");

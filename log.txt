@@ -6,196 +6,75 @@ enp0s8 OK
 addr=192.168.20.11
 subnet=192.168.20.0
 netmask=255.255.255.0
+---unpack_ethernet_frame---
+
+1: 0800273deda50800275b
+2: 425f080045000054ac45
+3: 400001012e05c0a80a02
+4: c0a8140c0800ceef0145
+5: 05575b4d355a00000000
+6: c6f90c00000000001011
+7: 12131415161718191a1b
+8: 1c1d1e1f202122232425
+9: 262728292a2b2c2d2e2f
+10: 3031323334353637
+---end unpack_ethernet_frame---
 ---print_waiting_list---
 ---end print_waiting_list---
----print_send_queue---
 ---end print_send_queue---
+---print_arp_table---
+---end print_arp_table---
 ETHERTYPE: IP
+IP packet is time exceeded.
 ---dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.1
-src: 192.168.20.11
----end dequeue_send_queue---
-64
 ---send_ethernet_frame---
 
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 14010000000000000000
-6: 00000000000000000000
-7: 9d8d52f8
+1: 0800275b425f0800273d
+2: eda50800450000480000
+3: 00004001e561c0a80a01
+4: c0a80a020b00e6d20000
+5: 000045000054ac454000
+6: 01010000c0a80a02c0a8
+7: 140c0800ceef01450557
+8: 5b4d355a00000000c6f9
+9: 0c000000000010111213
+10: 1415161718191a1b1c1d
+11: 1e1f20212223
 ---end send_ethernet_frame---
----print_waiting_list---
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: IP
 ---dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.12
-src: 192.168.20.11
----end dequeue_send_queue---
-64
+---unpack_ethernet_frame---
+
+1: 0800273deda50800275b
+2: 425f080045000054acc6
+3: 400001012d84c0a80a02
+4: c0a8140c08007eb80145
+5: 05585c4d355a00000000
+6: 15300d00000000001011
+7: 12131415161718191a1b
+8: 1c1d1e1f202122232425
+9: 262728292a2b2c2d2e2f
+10: 3031323334353637
+---end unpack_ethernet_frame---
+---print_waiting_list---
+---end print_waiting_list---
+---end print_send_queue---
+---print_arp_table---
+---end print_arp_table---
+ETHERTYPE: IP
+IP packet is time exceeded.
+---dequeue_send_queue---
 ---send_ethernet_frame---
 
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 140c0000000000000000
-6: 00000000000000000000
-7: 58936482
+1: 0800275b425f0800273d
+2: eda50800450000480000
+3: 00004001e561c0a80a01
+4: c0a80a020b00e6510000
+5: 000045000054acc64000
+6: 01010000c0a80a02c0a8
+7: 140c08007eb801450558
+8: 5c4d355a000000001530
+9: 0d000000000010111213
+10: 1415161718191a1b1c1d
+11: 1e1f20212223
 ---end send_ethernet_frame---
----print_waiting_list---
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: ARP
----print_waiting_list---
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: IP
 ---dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.12
-src: 192.168.20.11
----end dequeue_send_queue---
-64
----send_ethernet_frame---
-
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 140c0000000000000000
-6: 00000000000000000000
-7: e560371c
----end send_ethernet_frame---
----print_waiting_list---
-192.168.20.12
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: ARP
----print_waiting_list---
-192.168.20.12
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: IP
----dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.1
-src: 192.168.20.11
----end dequeue_send_queue---
-64
----send_ethernet_frame---
-
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 14010000000000000000
-6: 00000000000000000000
-7: 8f9a7a64
----end send_ethernet_frame---
----print_waiting_list---
-8.8.8.8
-192.168.20.12
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: IP
----dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.12
-src: 192.168.20.11
----end dequeue_send_queue---
-64
----send_ethernet_frame---
-
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 140c0000000000000000
-6: 00000000000000000000
-7: b7ae1bb4
----end send_ethernet_frame---
----print_waiting_list---
-192.168.20.12
-8.8.8.8
-192.168.20.12
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: ARP
----print_waiting_list---
-192.168.20.12
-8.8.8.8
-192.168.20.12
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: IP
----dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.1
-src: 192.168.20.11
----end dequeue_send_queue---
-64
----send_ethernet_frame---
-
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 14010000000000000000
-6: 00000000000000000000
-7: dfa9d2da
----end send_ethernet_frame---
----print_waiting_list---
-8.8.8.8
-192.168.20.12
-8.8.8.8
-192.168.20.12
-192.168.20.12
-8.8.4.4
----end print_waiting_list---
----print_send_queue---
----end print_send_queue---
-ETHERTYPE: IP
----dequeue_send_queue---
-ETHERTYPE: ARP
-dst: 192.168.20.1
-src: 192.168.20.11
----end dequeue_send_queue---
-64
----send_ethernet_frame---
-
-1: ffffffffffff0800273d
-2: 16c30806000108000604
-3: 00010800273d16c3c0a8
-4: 140b000000000000c0a8
-5: 14010000000000000000
-6: 00000000000000000000
-7: bfdb4df1
----end send_ethernet_frame---

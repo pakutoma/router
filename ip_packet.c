@@ -12,11 +12,12 @@
 #include <netinet/ip.h>
 #include <stdint.h>
 #include <string.h>
+
 int decrement_ttl(struct iphdr *header);
 int validate_ip_packet(ether_frame_t *ether_frame, struct iphdr *header);
-int find_recieved_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_DEVICES]);
 int find_device_neighbor_network(uint32_t ipaddr, device_t devices[NUMBER_OF_DEVICES]);
 int send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint32_t origin_device_ipaddr, uint32_t neighbor_ipaddr);
+
 int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEVICES], struct in_addr next_router) {
     if (ether_frame->payload_size < sizeof(struct iphdr)) {
         log_stdout("IP packet is too short.\n");
@@ -60,7 +61,6 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
 
 int send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint32_t origin_device_ipaddr, uint32_t neighbor_ipaddr) {
     uint8_t dst_macaddr[ETH_ALEN];
-
     if (find_macaddr(neighbor_ipaddr, dst_macaddr) == -1) {
         ether_frame_t *arp_frame;
         if ((arp_frame = create_arp_request(src_macaddr, origin_device_ipaddr, neighbor_ipaddr)) == NULL) {
@@ -92,7 +92,9 @@ int decrement_ttl(struct iphdr *header) {
     if (ttl == 0) {
         return 0;
     }
-    header->check = update_checksum(header->check, header->ttl, ttl);
+    header->ttl = ttl;
+    header->check = 0;
+    header->check = calc_checksum((uint8_t *)header, header->ihl * 4);
     return ttl;
 }
 

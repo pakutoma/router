@@ -29,24 +29,6 @@ ether_frame_t *dequeue_send_queue() {
         return NULL;
     }
     ether_frame_t *data = send_queue[head];
-    uint8_t *ptr;
-
-    log_stdout("---%s---\n", __func__);
-    if (ntohs(data->header.ether_type) == ETHERTYPE_IP) {
-        log_stdout("ETHERTYPE: IP\n");
-        ptr = (uint8_t *)&((struct iphdr *)data->payload)->daddr;
-        log_stdout("dst: %d.%d.%d.%d\n", ptr[0], ptr[1], ptr[2], ptr[3]);
-        ptr = (uint8_t *)&((struct iphdr *)data->payload)->saddr;
-        log_stdout("src: %d.%d.%d.%d\n", ptr[0], ptr[1], ptr[2], ptr[3]);
-    } else if (ntohs(data->header.ether_type) == ETHERTYPE_ARP) {
-        log_stdout("ETHERTYPE: ARP\n");
-        ptr = (uint8_t *)&((struct ether_arp *)data->payload)->arp_tpa;
-        log_stdout("dst: %d.%d.%d.%d\n", ptr[0], ptr[1], ptr[2], ptr[3]);
-        ptr = (uint8_t *)&((struct ether_arp *)data->payload)->arp_spa;
-        log_stdout("src: %d.%d.%d.%d\n", ptr[0], ptr[1], ptr[2], ptr[3]);
-    }
-    log_stdout("---end %s---\n", __func__);
-
     if (head + 1 == QUEUE_SIZE) {
         head = 0;
     } else {
