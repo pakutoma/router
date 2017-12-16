@@ -1,6 +1,7 @@
 #include "device.h"
 #include <net/ethernet.h>
 #include <netinet/in.h>
+#include <string.h>
 
 int find_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_DEVICES]) {
     int i;

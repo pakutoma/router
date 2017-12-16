@@ -72,7 +72,7 @@ int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_SIZE], int size, ethe
 int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *sending_frame) {
     uint8_t *data;
     int size;
-    if (size = pack_ethernet_frame(&data, sending_frame) == -1) {
+    if ((size = pack_ethernet_frame(&data, sending_frame)) == -1) {
         return -1;
     }
 
