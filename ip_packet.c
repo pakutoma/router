@@ -30,7 +30,7 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
     }
 
     int recieved_device_index;
-    if ((recieved_device_index = find_recieved_device(ether_frame->header.ether_dhost, devices)) == -1) {
+    if ((recieved_device_index = find_device(ether_frame->header.ether_dhost, devices)) == -1) {
         log_stdout("Couldn't find recieved device.\n");
         return -1;
     }
@@ -94,16 +94,6 @@ int decrement_ttl(struct iphdr *header) {
     }
     header->check = update_checksum(header->check, header->ttl, ttl);
     return ttl;
-}
-
-int find_recieved_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_DEVICES]) {
-    int i;
-    for (i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (memcmp(devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 int find_device_neighbor_network(uint32_t ipaddr, device_t devices[NUMBER_OF_DEVICES]) {

@@ -10,3 +10,5 @@ typedef struct {
     unsigned char hw_addr[ETH_ALEN];
     struct in_addr addr, subnet, netmask;
 } device_t;
+
+int find_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_DEVICES]);

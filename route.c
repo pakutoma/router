@@ -67,10 +67,10 @@ int route(device_t devices[2], char *next_router_addr) {
                 break;
         }
 
-        //send_ethernet_frame();
-        //使用されないはず
-        //free(received_frame->payload);
-        //free(received_frame);
+        ether_frame_t *sending_frame;
+        while ((sending_frame = dequeue_send_queue()) != NULL) {
+            send_ethernet_frame(devices, sending_frame);
+        }
     }
     return 0;
 }

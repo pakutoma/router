@@ -26,7 +26,6 @@ int enqueue_send_queue(ether_frame_t *ether_frame) {
 
 ether_frame_t *dequeue_send_queue() {
     if (head == tail) {
-        log_error("SEND_QUEUE: queue empty.");
         return NULL;
     }
     ether_frame_t *data = send_queue[head];
