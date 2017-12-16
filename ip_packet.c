@@ -63,7 +63,7 @@ int send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint3
 
     if (find_macaddr(neighbor_ipaddr, dst_macaddr) == -1) {
         ether_frame_t *arp_frame;
-        if ((arp_frame = create_arp_request(ether_frame, origin_device_ipaddr, neighbor_ipaddr)) == NULL) {
+        if ((arp_frame = create_arp_request(src_macaddr, origin_device_ipaddr, neighbor_ipaddr)) == NULL) {
             return -1;
         }
         enqueue_send_queue(arp_frame);

@@ -1,4 +1,5 @@
 #include "ether_frame.h"
+#include "checksum.h"
 #include "device.h"
 #include "log.h"
 #include <errno.h>
@@ -8,18 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#define ETHERNET_FRAME_SIZE 1518
+#define ETHERNET_FRAME_HIGHER_LIMIT_SIZE 1518
+#define ETHERNET_FRAME_LOWER_LIMIT_SIZE 64
 #define ETHERNET_FOOTER_SIZE 4
+#define PACKET_LOWER_LIMIT_SIZE 46
 
-int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_SIZE], int size, ether_frame_t **received_frame);
+int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame);
 int pack_ethernet_frame(unsigned char **data, ether_frame_t *sending_frame);
 
 int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame) {
-    int size;
-    int status;
-    int i;
-    unsigned char buf[ETHERNET_FRAME_SIZE] = {0};
-    status = poll(sockets, 2, 100);
+    int status = poll(sockets, 2, 100);
 
     if (status == -1) { //error
         if (errno != EINTR) {
@@ -32,7 +31,9 @@ int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_fr
         return -1;
     }
 
-    for (i = 0; i < 2; i++) {
+    int size;
+    unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE] = {0};
+    for (int i = 0; i < 2; i++) {
         if (!(sockets[i].revents & (POLLIN | POLLERR))) {
             continue;
         }
@@ -49,7 +50,7 @@ int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_fr
     return size;
 }
 
-int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_SIZE], int size, ether_frame_t **received_frame) {
+int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame) {
     unsigned char *ptr = buf;
 
     if ((*received_frame = malloc(sizeof(ether_frame_t))) == NULL) {
@@ -65,7 +66,6 @@ int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_SIZE], int size, ethe
     }
     memcpy((*received_frame)->payload, ptr, sizeof(unsigned char) * (*received_frame)->payload_size);
     ptr += (*received_frame)->payload_size;
-    memcpy((*received_frame)->fcs, ptr, sizeof(unsigned char) * ETHERNET_FOOTER_SIZE);
     return 0;
 }
 
@@ -85,6 +85,19 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
         log_perror("write");
         return -1;
     }
+
+    log_stdout("---%s---\n", __func__);
+    uint8_t *ptr = data;
+    for (int i = 0; i < size; i++) {
+        if (i % 10 == 0) {
+            log_stdout("\n%d: ", i / 10 + 1);
+        }
+        log_stdout("%02x", *ptr);
+        ptr++;
+    }
+    log_stdout("\n");
+    log_stdout("---end %s---\n", __func__);
+
     free(data);
     free(sending_frame->payload);
     free(sending_frame);
@@ -93,13 +106,17 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
 
 int pack_ethernet_frame(unsigned char **data, ether_frame_t *sending_frame) {
     int size = sizeof(struct ether_header) + (sending_frame->payload_size * sizeof(uint8_t)) + ETHERNET_FOOTER_SIZE * sizeof(uint8_t);
-    if (size > ETHERNET_FRAME_SIZE) {
+    if (size > ETHERNET_FRAME_HIGHER_LIMIT_SIZE) {
         log_error("%s: Ethernet frame is too big.\n", __func__);
         return -1;
     }
+    if (size < ETHERNET_FRAME_LOWER_LIMIT_SIZE) {
+        size = ETHERNET_FRAME_LOWER_LIMIT_SIZE;
+    }
 
-    if ((*data = malloc(size)) == NULL) {
-        log_perror("malloc");
+    log_stdout("%d\n", size);
+    if ((*data = calloc(size, sizeof(uint8_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
 
@@ -108,6 +125,11 @@ int pack_ethernet_frame(unsigned char **data, ether_frame_t *sending_frame) {
     ptr += sizeof(struct ether_header);
     memcpy(ptr, sending_frame->payload, sending_frame->payload_size * sizeof(uint8_t));
     ptr += sending_frame->payload_size;
-    memcpy(ptr, sending_frame->fcs, ETHERNET_FOOTER_SIZE * sizeof(uint8_t));
+    if (sending_frame->payload_size < PACKET_LOWER_LIMIT_SIZE) {
+        int padding_size = PACKET_LOWER_LIMIT_SIZE - sending_frame->payload_size;
+        ptr += padding_size;
+    }
+    uint32_t fcs = htonl(calc_fcs(ptr, size - ETHERNET_FOOTER_SIZE));
+    memcpy(ptr, &fcs, ETHERNET_FOOTER_SIZE * sizeof(uint8_t));
     return size;
 }
