@@ -45,7 +45,7 @@ int device_init(device_t devices[]) {
 
 int init_raw_socket(char *device_name, int is_promisc) {
     int sock_desc;
-    struct ifreq ifreq = {0};
+    struct ifreq ifreq = {{{0}}};
     struct sockaddr_ll sa = {0};
     if ((sock_desc = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) {
         log_perror("socket");
@@ -85,7 +85,7 @@ int init_raw_socket(char *device_name, int is_promisc) {
 }
 
 int get_device_info(device_t *device) {
-    struct ifreq ifreq = {0};
+    struct ifreq ifreq = {{{0}}};
     struct sockaddr_in addr = {0};
     int sock_desc;
     unsigned char *ptr;

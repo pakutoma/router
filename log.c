@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-static int is_enabled_log;
-static int is_enabled_log_error;
+static int is_enabled_log = 1;
+static int is_enabled_log_error = 1;
 
 void set_log_mode(int set_enabled_log, int set_enabled_log_error) {
     is_enabled_log = set_enabled_log;

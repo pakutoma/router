@@ -1,4 +1,3 @@
-#include "crc32_table.h"
 #include <stdint.h>
 unsigned short calc_checksum(uint8_t *header, int32_t length) {
     uint32_t sum;
