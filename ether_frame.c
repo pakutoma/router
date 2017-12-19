@@ -13,8 +13,8 @@
 #define ETHERNET_FRAME_LOWER_LIMIT_SIZE 64
 #define PACKET_LOWER_LIMIT_SIZE 46
 
-int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame);
-int pack_ethernet_frame(unsigned char **data, ether_frame_t *sending_frame);
+int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame);
+int pack_ethernet_frame(uint8_t **data, ether_frame_t *sending_frame);
 
 int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame) {
     int status = poll(sockets, 2, 100);
@@ -31,7 +31,7 @@ int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_fr
     }
 
     int size;
-    unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE] = {0};
+    uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE] = {0};
     for (int i = 0; i < 2; i++) {
         if (!(sockets[i].revents & (POLLIN | POLLERR))) {
             continue;
@@ -61,8 +61,8 @@ int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_fr
     return size;
 }
 
-int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame) {
-    unsigned char *ptr = buf;
+int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame) {
+    uint8_t *ptr = buf;
 
     if ((*received_frame = malloc(sizeof(ether_frame_t))) == NULL) {
         log_perror("malloc");
@@ -71,11 +71,11 @@ int unpack_ethernet_frame(unsigned char buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], i
     memcpy(&((*received_frame)->header), ptr, sizeof(struct ether_header));
     ptr += sizeof(struct ether_header);
     (*received_frame)->payload_size = size - sizeof(struct ether_header);
-    if (((*received_frame)->payload = malloc(sizeof(unsigned char) * (*received_frame)->payload_size)) == NULL) {
+    if (((*received_frame)->payload = malloc(sizeof(uint8_t) * (*received_frame)->payload_size)) == NULL) {
         log_perror("malloc");
         return -1;
     }
-    memcpy((*received_frame)->payload, ptr, sizeof(unsigned char) * (*received_frame)->payload_size);
+    memcpy((*received_frame)->payload, ptr, sizeof(uint8_t) * (*received_frame)->payload_size);
     ptr += (*received_frame)->payload_size;
     return 0;
 }
@@ -115,7 +115,7 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
     return 0;
 }
 
-int pack_ethernet_frame(unsigned char **data, ether_frame_t *sending_frame) {
+int pack_ethernet_frame(uint8_t **data, ether_frame_t *sending_frame) {
     int size = sizeof(struct ether_header) + (sending_frame->payload_size * sizeof(uint8_t));
     if (size > ETHERNET_FRAME_HIGHER_LIMIT_SIZE) {
         log_error("%s: Ethernet frame is too big.\n", __func__);

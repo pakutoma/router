@@ -13,10 +13,6 @@
 #include <signal.h>
 #include <stdlib.h>
 
-static int is_end = 0;
-
-void end_signal(int signal);
-
 int route(device_t devices[2], char *next_router_addr) {
     struct in_addr next_router;
 
@@ -31,10 +27,6 @@ int route(device_t devices[2], char *next_router_addr) {
     sockets[1].fd = devices[1].sock_desc;
     sockets[1].events = POLLIN;
 
-    signal(SIGINT, end_signal);
-    signal(SIGTERM, end_signal);
-    signal(SIGQUIT, end_signal);
-
     if (init_arp_table() == -1) {
         return -1;
     }
@@ -42,7 +34,7 @@ int route(device_t devices[2], char *next_router_addr) {
         return -1;
     }
 
-    while (!is_end) {
+    while (1) {
         int size;
         ether_frame_t *received_frame;
         if ((size = receive_ethernet_frame(sockets, &received_frame)) <= 0) {
@@ -75,8 +67,4 @@ int route(device_t devices[2], char *next_router_addr) {
         }
     }
     return 0;
-}
-
-void end_signal(int signal) {
-    is_end = 1;
 }

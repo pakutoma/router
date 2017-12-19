@@ -7,7 +7,7 @@
 typedef struct {
     char *netif_name;
     int sock_desc;
-    unsigned char hw_addr[ETH_ALEN];
+    uint8_t hw_addr[ETH_ALEN];
     struct in_addr addr, subnet, netmask;
 } device_t;
 

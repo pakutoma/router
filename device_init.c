@@ -6,6 +6,7 @@
 #include <netinet/if_ether.h>
 #include <netinet/ip.h>
 #include <netpacket/packet.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/ioctl.h>
@@ -88,7 +89,7 @@ int get_device_info(device_t *device) {
     struct ifreq ifreq = {{{0}}};
     struct sockaddr_in addr = {0};
     int sock_desc;
-    unsigned char *ptr;
+    uint8_t *ptr;
 
     if ((sock_desc = socket(PF_INET, SOCK_DGRAM, 0)) < 0) {
         log_perror("socket");
@@ -102,7 +103,7 @@ int get_device_info(device_t *device) {
         close(sock_desc);
         return -1;
     } else {
-        ptr = (unsigned char *)&ifreq.ifr_hwaddr.sa_data;
+        ptr = (uint8_t *)&ifreq.ifr_hwaddr.sa_data;
         memcpy(device->hw_addr, ptr, 6);
     }
 

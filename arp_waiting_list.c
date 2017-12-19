@@ -8,7 +8,7 @@
 #include <string.h>
 typedef struct arp_waiting_node {
     struct arp_waiting_node *next;
-    unsigned int neighbor_ipaddr;
+    uint32_t neighbor_ipaddr;
     ether_frame_t *ether_frame;
 } arp_waiting_node_t;
 

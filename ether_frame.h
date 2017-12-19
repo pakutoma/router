@@ -5,7 +5,7 @@
 #include <poll.h>
 typedef struct {
     struct ether_header header;
-    unsigned char *payload;
+    uint8_t *payload;
     int payload_size;
 } ether_frame_t;
 

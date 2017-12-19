@@ -7,8 +7,8 @@
 #define ARP_TABLE_TIMEOUT 120
 typedef struct ip_mac_node {
     struct ip_mac_node *next;
-    unsigned int ipaddr;
-    unsigned char macaddr[ETH_ALEN];
+    uint32_t ipaddr;
+    uint8_t macaddr[ETH_ALEN];
     time_t creation_time;
 } ip_mac_node_t;
 
