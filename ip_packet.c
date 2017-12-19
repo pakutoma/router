@@ -30,16 +30,16 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
         return -1;
     }
 
-    int recieved_device_index;
-    if ((recieved_device_index = find_device(ether_frame->header.ether_dhost, devices)) == -1) {
-        log_stdout("Couldn't find recieved device.\n");
+    int received_device_index;
+    if ((received_device_index = find_device(ether_frame->header.ether_dhost, devices)) == -1) {
+        log_stdout("Couldn't find received device.\n");
         return -1;
     }
 
     if (decrement_ttl(ip_header) == 0) {
         log_stdout("IP packet is time exceeded.\n");
         ether_frame_t *icmp_frame;
-        if ((icmp_frame = create_time_exceeded_request(ether_frame, devices[recieved_device_index].addr.s_addr, ip_header->saddr)) == NULL) {
+        if ((icmp_frame = create_time_exceeded_request(ether_frame, devices[received_device_index].addr.s_addr, ip_header->saddr)) == NULL) {
             return -1;
         }
         enqueue_send_queue(icmp_frame);
