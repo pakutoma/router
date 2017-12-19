@@ -15,8 +15,8 @@ typedef struct arp_waiting_node {
 static arp_waiting_node_t *head;
 
 int init_arp_waiting_list() {
-    if ((head = malloc(sizeof(arp_waiting_node_t))) == NULL) {
-        log_perror("malloc");
+    if ((head = calloc(1, sizeof(arp_waiting_node_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
     head->next = NULL;
@@ -25,8 +25,8 @@ int init_arp_waiting_list() {
 
 int add_arp_waiting_list(ether_frame_t *ether_frame, uint32_t neighbor_ipaddr) {
     arp_waiting_node_t *new_node;
-    if ((new_node = malloc(sizeof(arp_waiting_node_t))) == NULL) {
-        log_perror("malloc");
+    if ((new_node = calloc(1, sizeof(arp_waiting_node_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
     new_node->next = head->next;

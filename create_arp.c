@@ -10,12 +10,12 @@
 ether_frame_t *create_arp_request(uint8_t own_macaddr[ETH_ALEN], uint32_t own_ipaddr, uint32_t neighbor_ipaddr) {
     ether_frame_t *arp_frame;
     struct ether_arp *arp_packet;
-    if ((arp_frame = malloc(sizeof(ether_frame_t))) == NULL) {
-        log_perror("malloc");
+    if ((arp_frame = calloc(1, sizeof(ether_frame_t))) == NULL) {
+        log_perror("calloc");
         return NULL;
     }
-    if ((arp_frame->payload = malloc(sizeof(struct ether_arp))) == NULL) {
-        log_perror("malloc");
+    if ((arp_frame->payload = calloc(1, sizeof(struct ether_arp))) == NULL) {
+        log_perror("calloc");
         return NULL;
     }
     arp_frame->payload_size = sizeof(struct ether_arp);

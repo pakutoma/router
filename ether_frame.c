@@ -64,15 +64,15 @@ int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_fr
 int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame) {
     uint8_t *ptr = buf;
 
-    if ((*received_frame = malloc(sizeof(ether_frame_t))) == NULL) {
-        log_perror("malloc");
+    if ((*received_frame = calloc(1, sizeof(ether_frame_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
     memcpy(&((*received_frame)->header), ptr, sizeof(struct ether_header));
     ptr += sizeof(struct ether_header);
     (*received_frame)->payload_size = size - sizeof(struct ether_header);
-    if (((*received_frame)->payload = malloc(sizeof(uint8_t) * (*received_frame)->payload_size)) == NULL) {
-        log_perror("malloc");
+    if (((*received_frame)->payload = calloc((*received_frame)->payload_size, sizeof(uint8_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
     memcpy((*received_frame)->payload, ptr, sizeof(uint8_t) * (*received_frame)->payload_size);

@@ -15,12 +15,12 @@ ether_frame_t *create_time_exceeded_request(ether_frame_t *arrived_frame, uint32
     struct iphdr *ip_header;
     struct icmp *icmp_header;
 
-    if ((icmp_frame = malloc(sizeof(ether_frame_t))) == NULL) {
-        log_perror("malloc");
+    if ((icmp_frame = calloc(1, sizeof(ether_frame_t))) == NULL) {
+        log_perror("calloc");
         return NULL;
     }
-    if ((icmp_frame->payload = malloc(sizeof(struct iphdr) + sizeof(uint8_t) * (TIME_EXCEEDED_DATA_SIZE + TIME_EXCEEDED_HEADER_SIZE))) == NULL) {
-        log_perror("malloc");
+    if ((icmp_frame->payload = calloc(1, sizeof(struct iphdr) + sizeof(uint8_t) * (TIME_EXCEEDED_DATA_SIZE + TIME_EXCEEDED_HEADER_SIZE))) == NULL) {
+        log_perror("calloc");
         return NULL;
     }
     memset(icmp_frame->payload, 0xff, sizeof(struct iphdr) + sizeof(uint8_t) * (TIME_EXCEEDED_HEADER_SIZE + TIME_EXCEEDED_DATA_SIZE));

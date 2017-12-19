@@ -17,8 +17,8 @@ void remove_timeout_cache();
 static ip_mac_node_t *head = NULL;
 
 int init_arp_table() {
-    if ((head = malloc(sizeof(ip_mac_node_t))) == NULL) {
-        log_perror("malloc");
+    if ((head = calloc(1, sizeof(ip_mac_node_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
     head->next = NULL;
@@ -41,8 +41,8 @@ int register_arp_table(uint32_t new_ipaddr, uint8_t new_macaddr[ETH_ALEN]) {
     }
 
     ip_mac_node_t *new_node;
-    if ((new_node = malloc(sizeof(ip_mac_node_t))) == NULL) {
-        log_perror("malloc");
+    if ((new_node = calloc(1, sizeof(ip_mac_node_t))) == NULL) {
+        log_perror("calloc");
         return -1;
     }
     new_node->next = head->next;

@@ -52,7 +52,7 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
             return -1;
         }
     } else {
-        if (send_packet(ether_frame, devices[out_device_index].hw_addr, devices[out_device_index].addr.s_addr, ip_header->daddr)) {
+        if (send_packet(ether_frame, devices[out_device_index].hw_addr, devices[out_device_index].addr.s_addr, ip_header->daddr) == -1) {
             return -1;
         }
     }

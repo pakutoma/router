@@ -3,6 +3,7 @@
 #include "ether_frame.h"
 #include "log.h"
 #include <net/if_arp.h>
+#include <stdlib.h>
 int process_arp_packet(ether_frame_t *ether_frame) {
     if (ether_frame->payload_size < sizeof(struct ether_arp)) {
         log_stdout("ARP packet is too short.\n");
@@ -18,5 +19,7 @@ int process_arp_packet(ether_frame_t *ether_frame) {
 
     send_waiting_ethernet_frame_matching_ipaddr(*(uint32_t *)arp_packet->arp_spa, arp_packet->arp_sha);
     register_arp_table(*(uint32_t *)arp_packet->arp_spa, arp_packet->arp_sha);
+    free(ether_frame->payload);
+    free(ether_frame);
     return 0;
 }

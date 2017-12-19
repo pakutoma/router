@@ -46,11 +46,17 @@ int route(device_t devices[2], char *next_router_addr) {
         switch (ntohs(received_frame->header.ether_type)) {
             case ETHERTYPE_IP:
                 log_stdout("ETHERTYPE: IP\n");
-                process_ip_packet(received_frame, devices, next_router);
+                if (process_ip_packet(received_frame, devices, next_router) == -1) {
+                    free(received_frame->payload);
+                    free(received_frame);
+                }
                 break;
             case ETHERTYPE_ARP:
                 log_stdout("ETHERTYPE: ARP\n");
-                process_arp_packet(received_frame);
+                if (process_arp_packet(received_frame) == -1) {
+                    free(received_frame->payload);
+                    free(received_frame);
+                }
                 break;
             case ETHERTYPE_IPV6:
                 log_stdout("ETHERTYPE: IPv6\n");
@@ -58,6 +64,8 @@ int route(device_t devices[2], char *next_router_addr) {
                 break;
             default:
                 log_stdout("ETHERTYPE: UNKNOWN\n");
+                free(received_frame->payload);
+                free(received_frame);
                 break;
         }
 
