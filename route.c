@@ -18,8 +18,6 @@ static int is_end = 0;
 void end_signal(int signal);
 
 int route(device_t devices[2], char *next_router_addr) {
-    ether_frame_t *received_frame;
-    int size;
     struct in_addr next_router;
 
     if (inet_aton(next_router_addr, &next_router) == 0) {
@@ -45,6 +43,8 @@ int route(device_t devices[2], char *next_router_addr) {
     }
 
     while (!is_end) {
+        int size;
+        ether_frame_t *received_frame;
         if ((size = receive_ethernet_frame(sockets, &received_frame)) <= 0) {
             continue;
         }
