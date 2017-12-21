@@ -16,7 +16,7 @@
 int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame);
 int pack_ethernet_frame(uint8_t **data, ether_frame_t *sending_frame);
 
-int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame) {
+int receive_ethernet_frame(struct pollfd sockets[NUMBER_OF_DEVICES], ether_frame_t **received_frame) {
     int status = poll(sockets, 2, 100);
 
     if (status == -1) { //error
@@ -32,7 +32,7 @@ int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_fr
 
     int size;
     uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE] = {0};
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
         if (!(sockets[i].revents & (POLLIN | POLLERR))) {
             continue;
         }
