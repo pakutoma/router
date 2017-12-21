@@ -1,6 +1,7 @@
 #include "device.h"
 #include "device_init.h"
 #include "log.h"
+#include "os_init.h"
 #include "route.h"
 #include <stdio.h>
 #include <string.h>
@@ -17,6 +18,11 @@ int main(int argc, char *argv[]) {
     if (argc == 6) {
         set_log_mode(strcmp(argv[4], "0"), strcmp(argv[5], "0"));
     }
+
+    if (os_init() == -1) {
+        return -1;
+    }
+
     device_t devices[2];
     devices[0].netif_name = argv[1];
     devices[1].netif_name = argv[2];
