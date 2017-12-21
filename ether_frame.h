@@ -9,5 +9,5 @@ typedef struct {
     int payload_size;
 } ether_frame_t;
 
-int receive_ethernet_frame(struct pollfd sockets[2], ether_frame_t **received_frame);
+int receive_ethernet_frame(int epoll_fd, ether_frame_t **received_frame);
 int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *sending_frame);

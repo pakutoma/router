@@ -37,6 +37,14 @@ ether_frame_t *dequeue_send_queue() {
     return data;
 }
 
+ether_frame_t *peek_send_queue() {
+    if (head == tail) {
+        return NULL;
+    }
+    ether_frame_t *data = send_queue[head];
+    return data;
+}
+
 void print_send_queue() {
     log_stdout("---%s---\n", __func__);
     uint8_t *ptr;

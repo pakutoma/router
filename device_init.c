@@ -1,6 +1,7 @@
 #include "device.h"
 #include "log.h"
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <linux/if.h>
 #include <net/ethernet.h>
 #include <netinet/if_ether.h>
@@ -17,29 +18,20 @@ int init_raw_socket(char *device_name, int is_promisc);
 int get_device_info(device_t *device);
 
 int device_init(device_t devices[]) {
-    if (get_device_info(&(devices[0])) == -1) {
-        return -1;
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
+        if (get_device_info(&(devices[i])) == -1) {
+            return -1;
+        }
+        if ((devices[i].sock_desc = init_raw_socket(devices[i].netif_name, 0)) == -1) {
+            return -1;
+        }
+        int fd_flgs = fcntl(devices[i].sock_desc, F_GETFD);
+        fcntl(devices[i].sock_desc, F_SETFD, fd_flgs | O_NONBLOCK);
+        log_stdout("%s OK\n", devices[i].netif_name);
+        log_stdout("addr=%s\n", inet_ntoa(devices[i].addr));
+        log_stdout("subnet=%s\n", inet_ntoa(devices[i].subnet));
+        log_stdout("netmask=%s\n", inet_ntoa(devices[i].netmask));
     }
-    if ((devices[0].sock_desc = init_raw_socket(devices[0].netif_name, 0)) ==
-        -1) {
-        return -1;
-    }
-    log_stdout("%s OK\n", devices[0].netif_name);
-    log_stdout("addr=%s\n", inet_ntoa(devices[0].addr));
-    log_stdout("subnet=%s\n", inet_ntoa(devices[0].subnet));
-    log_stdout("netmask=%s\n", inet_ntoa(devices[0].netmask));
-
-    if (get_device_info(&(devices[1])) == -1) {
-        return -1;
-    }
-    if ((devices[1].sock_desc = init_raw_socket(devices[1].netif_name, 0)) ==
-        -1) {
-        return -1;
-    }
-    log_stdout("%s OK\n", devices[1].netif_name);
-    log_stdout("addr=%s\n", inet_ntoa(devices[1].addr));
-    log_stdout("subnet=%s\n", inet_ntoa(devices[1].subnet));
-    log_stdout("netmask=%s\n", inet_ntoa(devices[1].netmask));
 
     return 0;
 }

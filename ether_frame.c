@@ -4,43 +4,46 @@
 #include "log.h"
 #include <errno.h>
 #include <netinet/if_ether.h>
-#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/epoll.h>
 #include <unistd.h>
-#define ETHERNET_FRAME_HIGHER_LIMIT_SIZE 1518
+#define ETHERNET_FRAME_HIGHER_LIMIT_SIZE 1514
 #define ETHERNET_FRAME_LOWER_LIMIT_SIZE 64
 #define PACKET_LOWER_LIMIT_SIZE 46
+#define MAX_EVENTS 16
 
 int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame);
 int pack_ethernet_frame(uint8_t **data, ether_frame_t *sending_frame);
 
-int receive_ethernet_frame(struct pollfd sockets[NUMBER_OF_DEVICES], ether_frame_t **received_frame) {
-    int status = poll(sockets, 2, 100);
+static int events_num = 0;
+static struct epoll_event events[MAX_EVENTS] = {0};
 
-    if (status == -1) { //error
+int receive_ethernet_frame(int epoll_fd, ether_frame_t **received_frame) {
+
+    if (events_num <= 0) {
+        events_num = epoll_wait(epoll_fd, events, MAX_EVENTS, 1);
+    }
+
+    if (events_num == -1) { //error
         if (errno != EINTR) {
-            log_perror("poll");
+            log_perror("epoll");
         }
         return -1;
     }
 
-    if (status == 0) { //timeout
+    if (events_num == 0) { //not found
         return -1;
     }
 
     int size;
     uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE] = {0};
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (!(sockets[i].revents & (POLLIN | POLLERR))) {
-            continue;
-        }
 
-        if ((size = read(sockets[i].fd, buf, sizeof(buf))) <= 0) {
-            log_perror("read");
-            return -1;
-        }
+    events_num--;
+    if ((size = read(events[events_num].data.fd, buf, sizeof(buf))) <= 0) {
+        log_perror("read");
+        return -1;
     }
 
     log_stdout("---%s---", __func__);
@@ -93,7 +96,11 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
     }
 
     if (write(devices[index].sock_desc, data, size) == -1) {
-        log_perror("write");
+        if (errno != EAGAIN && errno != EWOULDBLOCK) {
+            log_perror("write");
+        } else {
+            log_error("can't write?\n");
+        }
         return -1;
     }
 
@@ -110,8 +117,6 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
     log_stdout("---end %s---\n", __func__);
 
     free(data);
-    free(sending_frame->payload);
-    free(sending_frame);
     return 0;
 }
 
