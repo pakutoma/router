@@ -15,6 +15,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <sys/epoll.h>
+#include <sys/timerfd.h>
+#include <unistd.h>
 
 void process_packet(ether_frame_t *received_frame, device_t devices[NUMBER_OF_DEVICES], struct in_addr next_router);
 void send_queued_packet(device_t devices[NUMBER_OF_DEVICES]);
@@ -34,9 +36,26 @@ int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
         return -1;
     }
 
-    init_event();
+    if (init_event() == -1) {
+        return -1;
+    }
     for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        add_event(devices[i].sock_desc, EPOLLIN);
+        if (add_event(devices[i].sock_desc, EPOLLIN) == -1) {
+            return -1;
+        }
+    }
+
+    int timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
+    if (timer_fd == -1) {
+        log_perror("timerfd_create");
+        return -1;
+    }
+    struct itimerspec timer = {{1, 0}, {1, 0}};
+    if (timerfd_settime(timer_fd, 0, &timer, NULL) == -1) {
+        return -1;
+    }
+    if (add_event(timer_fd, EPOLLIN) == -1) {
+        return -1;
     }
 
     struct epoll_event *event;
@@ -58,6 +77,11 @@ int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
                 modify_event(event->data.fd, EPOLLIN);
             }
         }
+        if (event->data.fd == timer_fd) {
+            uint64_t t;
+            read(timer_fd, &t, sizeof(uint64_t));
+            remove_timeout_cache();
+        }
         /*print_waiting_list();
         print_send_queue();
         print_arp_table();*/
@@ -69,7 +93,7 @@ int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
                 modify_event(devices[device_num].sock_desc, EPOLLIN | EPOLLOUT);
             }
         }
-        }
+    }
     return 0;
 }
 

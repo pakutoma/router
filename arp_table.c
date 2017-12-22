@@ -54,7 +54,6 @@ int register_arp_table(uint32_t new_ipaddr, uint8_t new_macaddr[ETH_ALEN]) {
 }
 
 int find_macaddr(uint32_t ipaddr, uint8_t macaddr[ETH_ALEN]) {
-    remove_timeout_cache();
     ip_mac_node_t *node = head->next;
     while (node != NULL) {
         if (node->ipaddr == ipaddr) {
