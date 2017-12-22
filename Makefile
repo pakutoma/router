@@ -1,7 +1,6 @@
 SRCS=$(wildcard *.c)
 OBJS=$(SRCS:%.c=%.o)
-CC=gcc
-CFLAGS=-g -Wall -Werror
+CFLAGS=-Wall -Werror -O3
 TARGET=router
 $(TARGET):$(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LDLIBS)
