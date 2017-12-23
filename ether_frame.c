@@ -2,6 +2,7 @@
 #include "checksum.h"
 #include "device.h"
 #include "log.h"
+#include "timer.h"
 #include <errno.h>
 #include <netinet/if_ether.h>
 #include <stdio.h>
@@ -26,6 +27,7 @@ int receive_ethernet_frame(int sock_desc, ether_frame_t **received_frame) {
         return -1;
     }
 
+#if DEBUG
     log_stdout("---%s---", __func__);
     uint8_t *ptr = buf;
     for (int i = 0; i < size; i++) {
@@ -37,10 +39,12 @@ int receive_ethernet_frame(int sock_desc, ether_frame_t **received_frame) {
     }
     log_stdout("\n");
     log_stdout("---end %s---\n", __func__);
+#endif
 
     if (unpack_ethernet_frame(buf, size, received_frame) == -1) {
         return -1;
     }
+
     return size;
 }
 
@@ -64,8 +68,10 @@ int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int siz
 }
 
 int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *sending_frame) {
+
     uint8_t *data;
     int size;
+
     if ((size = pack_ethernet_frame(&data, sending_frame)) == -1) {
         return -1;
     }
@@ -84,6 +90,7 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
         return -1;
     }
 
+#if DEBUG
     log_stdout("---%s---", __func__);
     uint8_t *ptr = data;
     for (int i = 0; i < size; i++) {
@@ -95,8 +102,10 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
     }
     log_stdout("\n");
     log_stdout("---end %s---\n", __func__);
+#endif
 
     free(data);
+
     return 0;
 }
 
