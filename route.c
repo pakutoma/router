@@ -18,11 +18,11 @@
 #include <sys/timerfd.h>
 #include <unistd.h>
 
-void process_packet(ether_frame_t *received_frame, device_t devices[NUMBER_OF_DEVICES], struct in_addr next_router);
-void send_queued_packet(device_t devices[NUMBER_OF_DEVICES]);
-bool is_sock_desc(struct epoll_event *event, device_t devices[NUMBER_OF_DEVICES]);
+void process_packet(ether_frame_t *received_frame, struct in_addr next_router);
+void send_queued_packet();
+bool is_sock_desc(struct epoll_event *event);
 
-int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
+int route(char *next_router_addr) {
     struct in_addr next_router;
 
     if (inet_aton(next_router_addr, &next_router) == 0) {
@@ -40,7 +40,7 @@ int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
         return -1;
     }
     for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (add_event(devices[i].sock_desc, EPOLLIN) == -1) {
+        if (add_event(get_device(i)->sock_desc, EPOLLIN) == -1) {
             return -1;
         }
     }
@@ -64,16 +64,16 @@ int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
             continue;
         }
 
-        if (is_sock_desc(event, devices)) {
+        if (is_sock_desc(event)) {
             if (event->events & EPOLLIN) {
                 int size;
                 ether_frame_t *received_frame;
                 if ((size = receive_ethernet_frame(event->data.fd, &received_frame)) > 0) {
-                    process_packet(received_frame, devices, next_router);
+                    process_packet(received_frame, next_router);
                 }
             }
             if (event->events & EPOLLOUT) {
-                send_queued_packet(devices);
+                send_queued_packet();
                 modify_event(event->data.fd, EPOLLIN);
             }
         }
@@ -88,20 +88,20 @@ int route(device_t devices[NUMBER_OF_DEVICES], char *next_router_addr) {
 
         ether_frame_t *ether_frame;
         if ((ether_frame = peek_send_queue()) != NULL) {
-            int device_num = find_device(ether_frame->header.ether_shost, devices);
-            if (device_num != -1) {
-                modify_event(devices[device_num].sock_desc, EPOLLIN | EPOLLOUT);
+            device_t *device = find_device_by_macaddr(ether_frame->header.ether_shost);
+            if (device != NULL) {
+                modify_event(device->sock_desc, EPOLLIN | EPOLLOUT);
             }
         }
     }
     return 0;
 }
 
-void process_packet(ether_frame_t *received_frame, device_t devices[NUMBER_OF_DEVICES], struct in_addr next_router) {
+void process_packet(ether_frame_t *received_frame, struct in_addr next_router) {
     switch (ntohs(received_frame->header.ether_type)) {
         case ETHERTYPE_IP:
             log_stdout("ETHERTYPE: IP\n");
-            if (process_ip_packet(received_frame, devices, next_router) == -1) {
+            if (process_ip_packet(received_frame, next_router) == -1) {
                 free(received_frame->payload);
                 free(received_frame);
             }
@@ -127,10 +127,10 @@ void process_packet(ether_frame_t *received_frame, device_t devices[NUMBER_OF_DE
     }
 }
 
-void send_queued_packet(device_t devices[NUMBER_OF_DEVICES]) {
+void send_queued_packet() {
     ether_frame_t *sending_frame;
     sending_frame = peek_send_queue();
-    if (send_ethernet_frame(devices, sending_frame) == -1) {
+    if (send_ethernet_frame(sending_frame) == -1) {
         return;
     } else {
         dequeue_send_queue();
@@ -139,9 +139,9 @@ void send_queued_packet(device_t devices[NUMBER_OF_DEVICES]) {
     }
 }
 
-bool is_sock_desc(struct epoll_event *event, device_t devices[NUMBER_OF_DEVICES]) {
+bool is_sock_desc(struct epoll_event *event) {
     for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (event->data.fd == devices[i].sock_desc) {
+        if (event->data.fd == get_device(i)->sock_desc) {
             return true;
         }
     }

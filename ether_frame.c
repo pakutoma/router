@@ -1,6 +1,6 @@
-#include "ether_frame.h"
 #include "checksum.h"
 #include "device.h"
+#include "ether_frame.h"
 #include "log.h"
 #include "timer.h"
 #include <errno.h>
@@ -67,7 +67,7 @@ int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int siz
     return 0;
 }
 
-int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *sending_frame) {
+int send_ethernet_frame(ether_frame_t *sending_frame) {
 
     uint8_t *data;
     int size;
@@ -76,12 +76,12 @@ int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *send
         return -1;
     }
 
-    int index = 0;
-    if ((index = find_device(sending_frame->header.ether_shost, devices)) == -1) {
+    device_t *device = 0;
+    if ((device = find_device_by_macaddr(sending_frame->header.ether_shost)) == NULL) {
         return -1;
     }
 
-    if (write(devices[index].sock_desc, data, size) == -1) {
+    if (write(device->sock_desc, data, size) == -1) {
         if (errno != EAGAIN && errno != EWOULDBLOCK) {
             log_perror("write");
         } else {

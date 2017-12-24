@@ -18,18 +18,25 @@
 int init_raw_socket(char *device_name, int is_promisc);
 int get_device_info(device_t *device);
 
-int find_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_DEVICES]) {
+static device_t devices[NUMBER_OF_DEVICES] = {{0}};
+
+device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
     int i;
     for (i = 0; i < NUMBER_OF_DEVICES; i++) {
         if (memcmp(devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
-            return i;
+            return &devices[i];
         }
     }
-    return -1;
+    return NULL;
 }
 
-int device_init(device_t devices[]) {
+device_t *get_device(int index) {
+    return &devices[index];
+}
+
+int device_init(char *device_names[NUMBER_OF_DEVICES]) {
     for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
+        devices[i].netif_name = device_names[i];
         if (get_device_info(&(devices[i])) == -1) {
             return -1;
         }
@@ -44,6 +51,13 @@ int device_init(device_t devices[]) {
         log_stdout("netmask=%s\n", inet_ntoa(devices[i].netmask));
     }
 
+    return 0;
+}
+
+int device_fin() {
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
+        close(devices[i].sock_desc);
+    }
     return 0;
 }
 
@@ -137,4 +151,14 @@ int get_device_info(device_t *device) {
 
     close(sock_desc);
     return 0;
+}
+
+device_t *find_device_by_ipaddr(uint32_t ipaddr) {
+    int i;
+    for (i = 0; i < NUMBER_OF_DEVICES; i++) {
+        if (devices[i].subnet.s_addr == (ipaddr & devices[i].netmask.s_addr)) {
+            return &devices[i];
+        }
+    }
+    return NULL;
 }

@@ -10,4 +10,4 @@ typedef struct {
 } ether_frame_t;
 
 int receive_ethernet_frame(int epoll_fd, ether_frame_t **received_frame);
-int send_ethernet_frame(device_t devices[NUMBER_OF_DEVICES], ether_frame_t *sending_frame);
+int send_ethernet_frame(ether_frame_t *sending_frame);

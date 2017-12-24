@@ -22,15 +22,14 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    device_t devices[2];
-    devices[0].netif_name = argv[1];
-    devices[1].netif_name = argv[2];
+    char *device_names[NUMBER_OF_DEVICES];
+    device_names[0] = argv[1];
+    device_names[1] = argv[2];
+
     char *next_router_addr = argv[3];
-    device_init(devices);
+    device_init(device_names);
 
-    route(devices, next_router_addr);
+    route(next_router_addr);
 
-    close(devices[0].sock_desc);
-    close(devices[1].sock_desc);
     return 0;
 }

@@ -15,10 +15,9 @@
 
 int decrement_ttl(struct iphdr *header);
 int validate_ip_packet(ether_frame_t *ether_frame, struct iphdr *header);
-int find_device_neighbor_network(uint32_t ipaddr, device_t devices[NUMBER_OF_DEVICES]);
 int send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint32_t origin_device_ipaddr, uint32_t neighbor_ipaddr);
 
-int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEVICES], struct in_addr next_router) {
+int process_ip_packet(ether_frame_t *ether_frame, struct in_addr next_router) {
     if (ether_frame->payload_size < sizeof(struct iphdr)) {
         log_stdout("IP packet is too short.\n");
         return -1;
@@ -30,8 +29,8 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
         return -1;
     }
 
-    int received_device_index;
-    if ((received_device_index = find_device(ether_frame->header.ether_dhost, devices)) == -1) {
+    device_t *received_device;
+    if ((received_device = find_device_by_macaddr(ether_frame->header.ether_dhost)) == NULL) {
         log_stdout("Couldn't find received device.\n");
         return -1;
     }
@@ -39,20 +38,20 @@ int process_ip_packet(ether_frame_t *ether_frame, device_t devices[NUMBER_OF_DEV
     if (decrement_ttl(ip_header) == 0) {
         log_stdout("IP packet is time exceeded.\n");
         ether_frame_t *icmp_frame;
-        if ((icmp_frame = create_time_exceeded_request(ether_frame, devices[received_device_index].addr.s_addr, ip_header->saddr)) == NULL) {
+        if ((icmp_frame = create_time_exceeded_request(ether_frame, received_device->addr.s_addr, ip_header->saddr)) == NULL) {
             return -1;
         }
         enqueue_send_queue(icmp_frame);
         return -1;
     }
 
-    int out_device_index;
-    if ((out_device_index = find_device_neighbor_network(ip_header->daddr, devices)) == -1) {
-        if (send_packet(ether_frame, devices[GATEWAY_DEVICE].hw_addr, devices[GATEWAY_DEVICE].addr.s_addr, (uint32_t)next_router.s_addr) == -1) {
+    device_t *out_device;
+    if ((out_device = find_device_by_ipaddr(ip_header->daddr)) == NULL) {
+        if (send_packet(ether_frame, get_device(GATEWAY_DEVICE)->hw_addr, get_device(GATEWAY_DEVICE)->addr.s_addr, (uint32_t)next_router.s_addr) == -1) {
             return -1;
         }
     } else {
-        if (send_packet(ether_frame, devices[out_device_index].hw_addr, devices[out_device_index].addr.s_addr, ip_header->daddr) == -1) {
+        if (send_packet(ether_frame, out_device->hw_addr, out_device->addr.s_addr, ip_header->daddr) == -1) {
             return -1;
         }
     }
@@ -96,14 +95,4 @@ int decrement_ttl(struct iphdr *header) {
     header->check = 0;
     header->check = calc_checksum((uint8_t *)header, header->ihl * 4);
     return ttl;
-}
-
-int find_device_neighbor_network(uint32_t ipaddr, device_t devices[NUMBER_OF_DEVICES]) {
-    int i;
-    for (i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (devices[i].subnet.s_addr == (ipaddr & devices[i].netmask.s_addr)) {
-            return i;
-        }
-    }
-    return -1;
 }

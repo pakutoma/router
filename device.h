@@ -11,5 +11,7 @@ typedef struct {
     struct in_addr addr, subnet, netmask;
 } device_t;
 
-int find_device(uint8_t macaddr[ETH_ALEN], device_t devices[NUMBER_OF_DEVICES]);
-int device_init(device_t devices[]);
+device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]);
+device_t *find_device_by_ipaddr(uint32_t ipaddr);
+int device_init(char *device_names[NUMBER_OF_DEVICES]);
+device_t *get_device(int index);
