@@ -7,7 +7,7 @@
 #define MAX_EVENTS 16
 
 static int events_num = 0;
-static struct epoll_event events[MAX_EVENTS] = {0};
+static struct epoll_event events[MAX_EVENTS] = {{0}};
 static int epoll_fd = 0;
 
 int init_event() {

@@ -1,5 +1,4 @@
 #include "device.h"
-#include "device_init.h"
 #include "log.h"
 #include "os_init.h"
 #include "route.h"

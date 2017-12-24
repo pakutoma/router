@@ -1,4 +1,5 @@
 #include "log.h"
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -36,5 +37,5 @@ void timer_stop(int index) {
 }
 
 void timer_show(int index) {
-    printf("%d: %lutimes,%lu us,%lu us/times,min: %lu us,max: %lu us\n", index, call_count[index], timers[index] / 1000, (timers[index] / 1000) / call_count[index], timers_min[index] / 1000, timers_max[index] / 1000);
+    printf("%d: %" PRId64 "times,%" PRId64 " us,%" PRId64 " us/times,min: %" PRId64 " us,max: %" PRId64 " us\n", index, call_count[index], timers[index] / 1000, (timers[index] / 1000) / call_count[index], timers_min[index] / 1000, timers_max[index] / 1000);
 }
