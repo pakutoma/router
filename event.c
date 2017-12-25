@@ -18,10 +18,10 @@ int init_event() {
     return 0;
 }
 
-int add_event(int fd, int event) {
+int add_event(int fd, int flag) {
     struct epoll_event ev;
     ev.data.fd = fd;
-    ev.events = event;
+    ev.events = flag;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) {
         log_perror("epoll_ctl");
         return -1;
@@ -29,10 +29,10 @@ int add_event(int fd, int event) {
     return 0;
 }
 
-int modify_event(int fd, int event) {
+int modify_event(int fd, int flag) {
     struct epoll_event ev;
     ev.data.fd = fd;
-    ev.events = event;
+    ev.events = flag;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev) == -1) {
         log_perror("epoll_ctl");
         return -1;

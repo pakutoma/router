@@ -9,5 +9,8 @@ typedef struct {
     int payload_size;
 } ether_frame_t;
 
+#define ETHERNET_FRAME_HIGHER_LIMIT_SIZE 1514
+
 int receive_ethernet_frame(int epoll_fd, ether_frame_t **received_frame);
-int send_ethernet_frame(ether_frame_t *sending_frame);
+size_t pack_ethernet_frame(uint8_t **data, ether_frame_t *sending_frame);
+int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame);

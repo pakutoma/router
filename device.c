@@ -15,14 +15,17 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-int init_raw_socket(char *device_name, int is_promisc);
+int init_raw_socket(char *device_name);
 int get_device_info(device_t *device);
 
 static device_t devices[NUMBER_OF_DEVICES] = {{0}};
 
+device_t *get_device(int index) {
+    return &devices[index];
+}
+
 device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
-    int i;
-    for (i = 0; i < NUMBER_OF_DEVICES; i++) {
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
         if (memcmp(devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
             return &devices[i];
         }
@@ -30,8 +33,31 @@ device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
     return NULL;
 }
 
-device_t *get_device(int index) {
-    return &devices[index];
+device_t *find_device_by_ipaddr(uint32_t ipaddr) {
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
+        if (devices[i].subnet.s_addr == (ipaddr & devices[i].netmask.s_addr)) {
+            return &devices[i];
+        }
+    }
+    return NULL;
+}
+
+int find_device_index_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
+        if (memcmp(devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int find_device_index_by_sock_desc(int sock_desc) {
+    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
+        if (devices[i].sock_desc == sock_desc) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 int device_init(char *device_names[NUMBER_OF_DEVICES]) {
@@ -40,7 +66,7 @@ int device_init(char *device_names[NUMBER_OF_DEVICES]) {
         if (get_device_info(&(devices[i])) == -1) {
             return -1;
         }
-        if ((devices[i].sock_desc = init_raw_socket(devices[i].netif_name, 0)) == -1) {
+        if ((devices[i].sock_desc = init_raw_socket(devices[i].netif_name)) == -1) {
             return -1;
         }
         int fd_flgs = fcntl(devices[i].sock_desc, F_GETFD);
@@ -61,7 +87,7 @@ int device_fin() {
     return 0;
 }
 
-int init_raw_socket(char *device_name, int is_promisc) {
+int init_raw_socket(char *device_name) {
     int sock_desc;
     struct ifreq ifreq = {{{0}}};
     struct sockaddr_ll sa = {0};
@@ -84,19 +110,6 @@ int init_raw_socket(char *device_name, int is_promisc) {
         log_perror("bind");
         close(sock_desc);
         return -1;
-    }
-    if (is_promisc) {
-        if (ioctl(sock_desc, SIOCGIFFLAGS, &ifreq) < 0) {
-            log_perror("ioctl");
-            close(sock_desc);
-            return -1;
-        }
-        ifreq.ifr_flags = ifreq.ifr_flags | IFF_PROMISC;
-        if (ioctl(sock_desc, SIOCSIFFLAGS, &ifreq)) {
-            log_perror("ioctl");
-            close(sock_desc);
-            return -1;
-        }
     }
 
     return sock_desc;
@@ -151,14 +164,4 @@ int get_device_info(device_t *device) {
 
     close(sock_desc);
     return 0;
-}
-
-device_t *find_device_by_ipaddr(uint32_t ipaddr) {
-    int i;
-    for (i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (devices[i].subnet.s_addr == (ipaddr & devices[i].netmask.s_addr)) {
-            return &devices[i];
-        }
-    }
-    return NULL;
 }
