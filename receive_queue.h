@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #include <sys/socket.h>
 #include "ether_frame.h"
+int init_receive_queue();
 ether_frame_t *dequeue_receive_queue();
 int set_mmsghdrs(int index, struct mmsghdr *mmsg_hdrs, size_t length);
 int enqueue_receive_queue(struct msghdr *msg_hdr);

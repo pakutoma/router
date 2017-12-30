@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
-#include "device.h"
 #include "ether_frame.h"
 #include "log.h"
+#include "settings.h"
 #include <net/ethernet.h>
 #include <net/if_arp.h>
 #include <netinet/ip.h>
@@ -10,12 +10,31 @@
 #include <sys/socket.h>
 #define QUEUE_SIZE 2000
 
-static struct msghdr *send_queue[NUMBER_OF_DEVICES][QUEUE_SIZE];
-static int head[NUMBER_OF_DEVICES] = {0};
-static int tail[NUMBER_OF_DEVICES] = {0};
+static struct msghdr *(*send_queue)[QUEUE_SIZE];
+static int *head;
+static int *tail;
 
 struct msghdr *pack_msghdr(void *packed_frame, size_t size);
 struct msghdr *dequeue_send_queue(int index);
+
+int init_send_queue() {
+    if ((send_queue = calloc(get_devices_length() * QUEUE_SIZE, sizeof(struct mmsghdr *))) == NULL) {
+        log_perror("calloc");
+        return -1;
+    }
+    if ((head = calloc(get_devices_length(), sizeof(int *))) == NULL) {
+        log_perror("calloc");
+        free(send_queue);
+        return -1;
+    }
+    if ((tail = calloc(get_devices_length(), sizeof(int *))) == NULL) {
+        log_perror("calloc");
+        free(send_queue);
+        free(head);
+        return -1;
+    }
+    return 0;
+}
 
 int enqueue_send_queue(ether_frame_t *ether_frame) {
 
@@ -62,7 +81,7 @@ struct mmsghdr *get_mmsghdrs(int index, int length) {
             free(mmsg_hdrs);
             return NULL;
         }
-        memcpy(&(mmsg_hdrs[i].msg_hdr), msg_hdr, sizeof(struct msghdr));
+        memcpy(&mmsg_hdrs[i].msg_hdr, msg_hdr, sizeof(struct msghdr));
         free(msg_hdr);
     }
     return mmsg_hdrs;

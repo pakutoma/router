@@ -1,5 +1,5 @@
-#include "device.h"
 #include "log.h"
+#include "settings.h"
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <linux/if.h>
@@ -18,72 +18,25 @@
 int init_raw_socket(char *device_name);
 int get_device_info(device_t *device);
 
-static device_t devices[NUMBER_OF_DEVICES] = {{0}};
-
-device_t *get_device(int index) {
-    return &devices[index];
-}
-
-device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (memcmp(devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
-            return &devices[i];
-        }
+int init_device(device_t *device) {
+    if (get_device_info(device) == -1) {
+        return -1;
     }
-    return NULL;
-}
-
-device_t *find_device_by_ipaddr(uint32_t ipaddr) {
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (devices[i].subnet.s_addr == (ipaddr & devices[i].netmask.s_addr)) {
-            return &devices[i];
-        }
+    if ((device->sock_desc = init_raw_socket(device->netif_name)) == -1) {
+        return -1;
     }
-    return NULL;
-}
-
-int find_device_index_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (memcmp(devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int find_device_index_by_sock_desc(int sock_desc) {
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        if (devices[i].sock_desc == sock_desc) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-int device_init(char *device_names[NUMBER_OF_DEVICES]) {
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        devices[i].netif_name = device_names[i];
-        if (get_device_info(&(devices[i])) == -1) {
-            return -1;
-        }
-        if ((devices[i].sock_desc = init_raw_socket(devices[i].netif_name)) == -1) {
-            return -1;
-        }
-        int fd_flgs = fcntl(devices[i].sock_desc, F_GETFD);
-        fcntl(devices[i].sock_desc, F_SETFD, fd_flgs | O_NONBLOCK);
-        log_stdout("%s OK\n", devices[i].netif_name);
-        log_stdout("addr=%s\n", inet_ntoa(devices[i].addr));
-        log_stdout("subnet=%s\n", inet_ntoa(devices[i].subnet));
-        log_stdout("netmask=%s\n", inet_ntoa(devices[i].netmask));
-    }
+    int fd_flgs = fcntl(device->sock_desc, F_GETFD);
+    fcntl(device->sock_desc, F_SETFD, fd_flgs | O_NONBLOCK);
+    log_stdout("%s OK\n", device->netif_name);
+    log_stdout("addr=%s\n", inet_ntoa(device->addr));
+    log_stdout("subnet=%s\n", inet_ntoa(device->subnet));
+    log_stdout("netmask=%s\n", inet_ntoa(device->netmask));
 
     return 0;
 }
 
-int device_fin() {
-    for (int i = 0; i < NUMBER_OF_DEVICES; i++) {
-        close(devices[i].sock_desc);
-    }
+int device_fin(device_t *device) {
+    close(device->sock_desc);
     return 0;
 }
 

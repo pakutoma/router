@@ -3,10 +3,10 @@
 #include "checksum.h"
 #include "create_arp.h"
 #include "create_icmp.h"
-#include "device.h"
 #include "ether_frame.h"
 #include "log.h"
 #include "send_queue.h"
+#include "settings.h"
 #include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <netinet/ip.h>
@@ -17,7 +17,7 @@ int decrement_ttl(struct iphdr *header);
 int validate_ip_packet(ether_frame_t *ether_frame, struct iphdr *header);
 int send_packet(ether_frame_t *ether_frame, uint8_t src_macaddr[ETH_ALEN], uint32_t origin_device_ipaddr, uint32_t neighbor_ipaddr);
 
-int process_ip_packet(ether_frame_t *ether_frame, struct in_addr next_router) {
+int process_ip_packet(ether_frame_t *ether_frame) {
     if (ether_frame->payload_size < sizeof(struct iphdr)) {
         log_stdout("IP packet is too short.\n");
         return -1;
@@ -47,7 +47,7 @@ int process_ip_packet(ether_frame_t *ether_frame, struct in_addr next_router) {
 
     device_t *out_device;
     if ((out_device = find_device_by_ipaddr(ip_header->daddr)) == NULL) {
-        if (send_packet(ether_frame, get_device(GATEWAY_DEVICE)->hw_addr, get_device(GATEWAY_DEVICE)->addr.s_addr, (uint32_t)next_router.s_addr) == -1) {
+        if (send_packet(ether_frame, get_device(get_gateway_device_index())->hw_addr, get_device(get_gateway_device_index())->addr.s_addr, (uint32_t)get_next_router_addr().s_addr) == -1) {
             return -1;
         }
     } else {

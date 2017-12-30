@@ -1,5 +1,5 @@
 #pragma once
-#include "device.h"
+#include "settings.h"
 #include <netinet/if_ether.h>
 #include <netinet/in.h>
 #include <poll.h>

@@ -1,5 +1,5 @@
 #include "checksum.h"
-#include "device.h"
+#include "settings.h"
 #include "ether_frame.h"
 #include "log.h"
 #include "timer.h"

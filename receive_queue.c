@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
-#include "device.h"
 #include "ether_frame.h"
 #include "log.h"
+#include "settings.h"
 #include <net/ethernet.h>
 #include <net/if_arp.h>
 #include <netinet/ip.h>
@@ -10,11 +10,30 @@
 #include <sys/socket.h>
 #define QUEUE_SIZE 2000
 
-static struct mmsghdr *receive_queue[NUMBER_OF_DEVICES][QUEUE_SIZE];
-static int head[NUMBER_OF_DEVICES] = {0};
-static int tail[NUMBER_OF_DEVICES] = {0};
+static struct mmsghdr *(*receive_queue)[QUEUE_SIZE];
+static int *head;
+static int *tail;
 
 size_t unpack_mmsghdr(void **data, struct mmsghdr *mmsg_hdr);
+
+int init_receive_queue() {
+    if ((receive_queue = calloc(get_devices_length() * QUEUE_SIZE, sizeof(struct mmsghdr *))) == NULL) {
+        log_perror("calloc");
+        return -1;
+    }
+    if ((head = calloc(get_devices_length(), sizeof(int))) == NULL) {
+        log_perror("calloc");
+        free(receive_queue);
+        return -1;
+    }
+    if ((tail = calloc(get_devices_length(), sizeof(int))) == NULL) {
+        log_perror("calloc");
+        free(receive_queue);
+        free(head);
+        return -1;
+    }
+    return 0;
+}
 
 int enqueue_receive_queue(int index, struct mmsghdr *mmsg_hdr) {
     if (head[index] == (tail[index] + 1) % QUEUE_SIZE) {
@@ -32,7 +51,7 @@ int enqueue_receive_queue(int index, struct mmsghdr *mmsg_hdr) {
 
 ether_frame_t *dequeue_receive_queue() {
     int index = -1;
-    for (size_t i = 0; i < NUMBER_OF_DEVICES; i++) {
+    for (size_t i = 0; i < get_devices_length(); i++) {
         if (head[i] != tail[i]) {
             index = i;
         }
