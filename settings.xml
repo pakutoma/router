@@ -16,10 +16,18 @@
             <AdvDefaultLifetime>1800</AdvDefaultLifetime>
             <AdvPrefixList>
                 <AdvPrefix>
+                    <AdvAddressPrefix>2001:db8:1::/64</AdvAddressPrefix>
                     <AdvValidLifetime>2592000</AdvValidLifetime>
                     <AdvOnLinkFlag>true</AdvOnLinkFlag>
                     <AdvPreferredLifetime>604800</AdvPreferredLifetime>
                     <AdvAutonomousFlag>true</AdvAutonomousFlag>
+                    <AdvRecursiveDNSServerList>
+                        <AdvRecursiveDNSServer>2001:db8:1::2</AdvRecursiveDNSServer>
+                        <AdvRecursiveDNSServer>2001:db8:1::3</AdvRecursiveDNSServer>
+                    </AdvRecursiveDNSServerList>
+                    <AdvDNSSearchList>
+                        <AdvDNSSearchSuffix>example.com</AdvDNSSearchSuffix>
+                    </AdvDNSSearchList>
                 </AdvPrefix>
             </AdvPrefixList>
         </Interface>
@@ -38,17 +46,41 @@
             <AdvDefaultLifetime>1800</AdvDefaultLifetime>
             <AdvPrefixList>
                 <AdvPrefix>
+                    <AdvAddressPrefix>2001:db8:3::/64</AdvAddressPrefix>
                     <AdvValidLifetime>2592000</AdvValidLifetime>
                     <AdvOnLinkFlag>true</AdvOnLinkFlag>
                     <AdvPreferredLifetime>604800</AdvPreferredLifetime>
                     <AdvAutonomousFlag>true</AdvAutonomousFlag>
+                    <AdvRecursiveDNSServerList>
+                        <AdvRecursiveDNSServer>2001:db8:3::2</AdvRecursiveDNSServer>
+                        <AdvRecursiveDNSServer>2001:db8:3::3</AdvRecursiveDNSServer>
+                    </AdvRecursiveDNSServerList>
+                    <AdvDNSSearchList>
+                        <AdvDNSSearchSuffix>pakutoma.pw</AdvDNSSearchSuffix>
+                    </AdvDNSSearchList>
+                </AdvPrefix>
+                <AdvPrefix>
+                    <AdvAddressPrefix>2001:db8:4::/64</AdvAddressPrefix>
+                    <AdvValidLifetime>2592000</AdvValidLifetime>
+                    <AdvOnLinkFlag>true</AdvOnLinkFlag>
+                    <AdvPreferredLifetime>604800</AdvPreferredLifetime>
+                    <AdvAutonomousFlag>true</AdvAutonomousFlag>
+                    <AdvRecursiveDNSServerList>
+                        <AdvRecursiveDNSServer>2001:db8:4::4</AdvRecursiveDNSServer>
+                        <AdvRecursiveDNSServer>2001:db8:4::5</AdvRecursiveDNSServer>
+                    </AdvRecursiveDNSServerList>
+                    <AdvDNSSearchList>
+                        <AdvDNSSearchSuffix>example.pw</AdvDNSSearchSuffix>
+                        <AdvDNSSearchSuffix>example.jp</AdvDNSSearchSuffix>
+                    </AdvDNSSearchList>
                 </AdvPrefix>
             </AdvPrefixList>
         </Interface>
     </Interfaces>
     <NextRouterAddress>192.168.20.1</NextRouterAddress>
+    <NextRouterIPv6Address>2001:db8:3::1</NextRouterIPv6Address>
     <LogMode>
-        <EnableLogStdout>false</EnableLogStdout>
-        <EnableLogError>false</EnableLogError>
+        <EnableLogStdout>true</EnableLogStdout>
+        <EnableLogError>true</EnableLogError>
     </LogMode>
 </Settings>

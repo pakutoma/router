@@ -6,10 +6,16 @@
 #include <net/ethernet.h>
 
 typedef struct {
+    struct in6_addr adv_address_prefix;
+    uint32_t adv_address_prefix_length;
     uint32_t adv_valid_life_time;
     bool adv_on_link_flag;
     uint32_t adv_preferred_life_time;
     bool adv_autonomous_flag;
+    struct in6_addr *adv_recursive_dns_server_list;
+    uint32_t adv_recursive_dns_server_list_length;
+    char **adv_dns_search_list;
+    uint32_t adv_dns_search_list_length;
 } adv_prefix_t;
 
 typedef struct {
@@ -43,6 +49,7 @@ typedef struct {
 
 typedef struct {
     struct in_addr next_router_addr;
+    struct in6_addr next_router_ipv6_addr;
     uint32_t gateway_device_index;
     device_t *devices;
     uint32_t devices_length;

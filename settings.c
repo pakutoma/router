@@ -12,6 +12,7 @@
 static settings_t settings;
 
 void print_settings();
+const char *domain_to_string(char *domain, char *buf, size_t size);
 
 int init_settings(char *filepath) {
     if (read_settings_from_file(&settings, filepath) == -1) {
@@ -32,7 +33,7 @@ int init_settings(char *filepath) {
         return -1;
     }
     set_log_mode(settings.log_mode.enable_log_stdout, settings.log_mode.enable_log_error);
-    //print_settings();
+    print_settings();
     return 0;
 }
 
@@ -89,8 +90,10 @@ int find_device_index_by_sock_desc(int sock_desc) {
 }
 
 void print_settings() {
+    char buf[253];
     log_stdout("---%s---\n", __func__);
     log_stdout("next_router_addr: %s\n", inet_ntoa(settings.next_router_addr));
+    log_stdout("next_router_ipv6_addr: %s\n", inet_ntop(AF_INET6, &settings.next_router_ipv6_addr, buf, 253));
     log_stdout("gateway_device_index: %" PRIu32 "\n", settings.gateway_device_index);
     log_stdout("devices_length: %" PRIu32 "\n", settings.devices_length);
     log_stdout("devices:\n");
@@ -118,14 +121,41 @@ void print_settings() {
         log_stdout("            prefix_list:\n");
         for (int j = 0; j < settings.devices[i].adv_settings.adv_prefix_list_length; j++) {
             log_stdout("                prefix%d:\n", j);
+            log_stdout("                    adv_address_prefix: %s\n", inet_ntop(AF_INET6, &settings.devices[i].adv_settings.adv_prefix_list[j].adv_address_prefix, buf, 253));
+            log_stdout("                    adv_address_prefix_length: %d\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_address_prefix_length);
             log_stdout("                    adv_valid_life_time: %d\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_valid_life_time);
             log_stdout("                    adv_on_link_flag: %s\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_on_link_flag ? "true" : "false");
             log_stdout("                    adv_preferred_life_time: %d\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_preferred_life_time);
             log_stdout("                    adv_autonomous_flag: %s\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_autonomous_flag ? "true" : "false");
+            for (int k = 0; k < settings.devices[i].adv_settings.adv_prefix_list[j].adv_recursive_dns_server_list_length; k++) {
+                log_stdout("                        adv_recursive_dns_server: %s\n", inet_ntop(AF_INET6, &settings.devices[i].adv_settings.adv_prefix_list[j].adv_recursive_dns_server_list[k], buf, 253));
+            }
+            for (int k = 0; k < settings.devices[i].adv_settings.adv_prefix_list[j].adv_dns_search_list_length; k++) {
+                log_stdout("                        adv_dns_search_suffix: %s\n", domain_to_string(settings.devices[i].adv_settings.adv_prefix_list[j].adv_dns_search_list[k], buf, 253));
+            }
         }
     }
     log_stdout("log_mode:\n");
     log_stdout("    enable_log_stdout: %s\n", settings.log_mode.enable_log_stdout ? "true" : "false");
     log_stdout("    enable_log_error: %s\n", settings.log_mode.enable_log_error ? "true" : "false");
     log_stdout("---end %s---\n", __func__);
+}
+
+const char *domain_to_string(char *domain, char *buf, size_t size) {
+    if (strlen(domain) - 2 > size) {
+        return NULL;
+    }
+    char *buf_ptr = buf;
+    char *domain_ptr = domain;
+    while (*domain_ptr != 0) {
+        int len = *domain_ptr;
+        domain_ptr++;
+        memcpy(buf_ptr, domain_ptr, len);
+        domain_ptr += len;
+        buf_ptr += len;
+        *buf_ptr = '.';
+        buf_ptr++;
+    }
+    *(--buf_ptr) = 0;
+    return buf;
 }
