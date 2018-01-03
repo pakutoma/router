@@ -12,10 +12,6 @@ typedef struct {
     bool adv_on_link_flag;
     uint32_t adv_preferred_life_time;
     bool adv_autonomous_flag;
-    struct in6_addr *adv_recursive_dns_server_list;
-    uint32_t adv_recursive_dns_server_list_length;
-    char **adv_dns_search_list;
-    uint32_t adv_dns_search_list_length;
 } adv_prefix_t;
 
 typedef struct {
@@ -32,6 +28,10 @@ typedef struct {
     uint32_t adv_default_life_time;
     adv_prefix_t *adv_prefix_list;
     uint32_t adv_prefix_list_length;
+    struct in6_addr *adv_recursive_dns_server_list;
+    uint32_t adv_recursive_dns_server_list_length;
+    char **adv_dns_search_list;
+    uint32_t adv_dns_search_list_length;
 } adv_settings_t;
 
 typedef struct {

@@ -127,12 +127,14 @@ void print_settings() {
             log_stdout("                    adv_on_link_flag: %s\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_on_link_flag ? "true" : "false");
             log_stdout("                    adv_preferred_life_time: %d\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_preferred_life_time);
             log_stdout("                    adv_autonomous_flag: %s\n", settings.devices[i].adv_settings.adv_prefix_list[j].adv_autonomous_flag ? "true" : "false");
-            for (int k = 0; k < settings.devices[i].adv_settings.adv_prefix_list[j].adv_recursive_dns_server_list_length; k++) {
-                log_stdout("                        adv_recursive_dns_server: %s\n", inet_ntop(AF_INET6, &settings.devices[i].adv_settings.adv_prefix_list[j].adv_recursive_dns_server_list[k], buf, 253));
-            }
-            for (int k = 0; k < settings.devices[i].adv_settings.adv_prefix_list[j].adv_dns_search_list_length; k++) {
-                log_stdout("                        adv_dns_search_suffix: %s\n", domain_to_string(settings.devices[i].adv_settings.adv_prefix_list[j].adv_dns_search_list[k], buf, 253));
-            }
+        }
+        log_stdout("            adv_recursive_dns_server_list:\n");
+        for (int j = 0; j < settings.devices[i].adv_settings.adv_recursive_dns_server_list_length; j++) {
+            log_stdout("                adv_recursive_dns_server: %s\n", inet_ntop(AF_INET6, &settings.devices[i].adv_settings.adv_recursive_dns_server_list[j], buf, 253));
+        }
+        log_stdout("            adv_dns_search_list:\n");
+        for (int j = 0; j < settings.devices[i].adv_settings.adv_dns_search_list_length; j++) {
+            log_stdout("                adv_dns_search_suffix: %s\n", domain_to_string(settings.devices[i].adv_settings.adv_dns_search_list[j], buf, 253));
         }
     }
     log_stdout("log_mode:\n");

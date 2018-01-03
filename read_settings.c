@@ -128,6 +128,40 @@ int parse_if_settings(device_t *device, xmlNode *if_root) {
                 }
                 prefix_root = prefix_root->next;
             }
+        } else if (xmlStrcmp(node->name, BAD_CAST "AdvRecursiveDNSServerList") == 0) {
+            device->adv_settings.adv_recursive_dns_server_list_length = count_children(node->children);
+            if ((device->adv_settings.adv_recursive_dns_server_list = calloc(device->adv_settings.adv_recursive_dns_server_list_length, sizeof(struct in6_addr))) == NULL) {
+                log_perror("calloc");
+                return -1;
+            }
+
+            xmlNode *server_root = node->children;
+            int i = 0;
+            while (server_root != NULL) {
+                if (server_root->type == XML_ELEMENT_NODE) {
+                    inet_pton(AF_INET6, (char *)server_root->children->content, &device->adv_settings.adv_recursive_dns_server_list[i]);
+                    i++;
+                }
+                server_root = server_root->next;
+            }
+        } else if (xmlStrcmp(node->name, BAD_CAST "AdvDNSSearchList") == 0) {
+            device->adv_settings.adv_dns_search_list_length = count_children(node->children);
+            if ((device->adv_settings.adv_dns_search_list = calloc(device->adv_settings.adv_dns_search_list_length, sizeof(char *))) == NULL) {
+                log_perror("calloc");
+                return -1;
+            }
+
+            xmlNode *suffix_root = node->children;
+            int i = 0;
+            while (suffix_root != NULL) {
+                if (suffix_root->type == XML_ELEMENT_NODE) {
+                    if (construct_dns_search_suffix((char *)suffix_root->children->content, &device->adv_settings.adv_dns_search_list[i]) == -1) {
+                        return -1;
+                    }
+                    i++;
+                }
+                suffix_root = suffix_root->next;
+            }
         }
         node = node->next;
     }
@@ -157,40 +191,6 @@ int parse_adv_prefix(adv_prefix_t *adv_prefix, xmlNode *prefix_root) {
             adv_prefix->adv_preferred_life_time = atoi((char *)node->children->content);
         } else if (xmlStrcmp(node->name, BAD_CAST "AdvAutonomousFlag") == 0) {
             adv_prefix->adv_autonomous_flag = xmlStrcmp(node->children->content, BAD_CAST "true") == 0;
-        } else if (xmlStrcmp(node->name, BAD_CAST "AdvRecursiveDNSServerList") == 0) {
-            adv_prefix->adv_recursive_dns_server_list_length = count_children(node->children);
-            if ((adv_prefix->adv_recursive_dns_server_list = calloc(adv_prefix->adv_recursive_dns_server_list_length, sizeof(struct in6_addr))) == NULL) {
-                log_perror("calloc");
-                return -1;
-            }
-
-            xmlNode *server_root = node->children;
-            int i = 0;
-            while (server_root != NULL) {
-                if (server_root->type == XML_ELEMENT_NODE) {
-                    inet_pton(AF_INET6, (char *)server_root->children->content, &adv_prefix->adv_recursive_dns_server_list[i]);
-                    i++;
-                }
-                server_root = server_root->next;
-            }
-        } else if (xmlStrcmp(node->name, BAD_CAST "AdvDNSSearchList") == 0) {
-            adv_prefix->adv_dns_search_list_length = count_children(node->children);
-            if ((adv_prefix->adv_dns_search_list = calloc(adv_prefix->adv_dns_search_list_length, sizeof(char *))) == NULL) {
-                log_perror("calloc");
-                return -1;
-            }
-
-            xmlNode *suffix_root = node->children;
-            int i = 0;
-            while (suffix_root != NULL) {
-                if (suffix_root->type == XML_ELEMENT_NODE) {
-                    if (construct_dns_search_suffix((char *)suffix_root->children->content, &adv_prefix->adv_dns_search_list[i]) == -1) {
-                        return -1;
-                    }
-                    i++;
-                }
-                suffix_root = suffix_root->next;
-            }
         }
         node = node->next;
     }
