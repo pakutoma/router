@@ -1,7 +1,9 @@
 #include "log.h"
 #include "settings.h"
 #include <arpa/inet.h>
+#include <asm/types.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
 #include <linux/if.h>
 #include <net/ethernet.h>
 #include <netinet/if_ether.h>
@@ -9,10 +11,11 @@
 #include <netinet/ip.h>
 #include <netpacket/packet.h>
 #include <stdint.h>
-#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 int init_raw_socket(char *device_name);
@@ -27,10 +30,16 @@ int init_device(device_t *device) {
     }
     int fd_flgs = fcntl(device->sock_desc, F_GETFD);
     fcntl(device->sock_desc, F_SETFD, fd_flgs | O_NONBLOCK);
+    char buf[64];
     log_stdout("%s OK\n", device->netif_name);
-    log_stdout("addr=%s\n", inet_ntoa(device->addr));
-    log_stdout("subnet=%s\n", inet_ntoa(device->subnet));
-    log_stdout("netmask=%s\n", inet_ntoa(device->netmask));
+    log_stdout("addr=%s\n", inet_ntop(AF_INET, &device->addr, buf, 64));
+    log_stdout("subnet=%s\n", inet_ntop(AF_INET, &device->subnet, buf, 64));
+    log_stdout("netmask=%s\n", inet_ntop(AF_INET, &device->netmask, buf, 64));
+    for (int i = 0; i < device->addr6_list_length; i++) {
+        log_stdout("addr6[%d]=%s\n", i, inet_ntop(AF_INET6, &device->addr6_list[i], buf, 64));
+        log_stdout("subnet6[%d]=%s\n", i, inet_ntop(AF_INET6, &device->subnet6_list[i], buf, 64));
+        log_stdout("netmask6[%d]=%s\n", i, inet_ntop(AF_INET6, &device->netmask6_list[i], buf, 64));
+    }
 
     return 0;
 }
@@ -70,7 +79,6 @@ int init_raw_socket(char *device_name) {
 
 int get_device_info(device_t *device) {
     struct ifreq ifreq = {{{0}}};
-    struct sockaddr_in addr = {0};
     int sock_desc;
     uint8_t *ptr;
 
@@ -90,31 +98,54 @@ int get_device_info(device_t *device) {
         memcpy(device->hw_addr, ptr, 6);
     }
 
-    if (ioctl(sock_desc, SIOCGIFADDR, &ifreq) == -1) {
-        log_perror("ioctl");
-        close(sock_desc);
-        return -1;
-    } else if (ifreq.ifr_addr.sa_family != PF_INET) {
-        log_error("%s not PF_INET\n", device->netif_name);
-        log_error("%d\n", ifreq.ifr_addr.sa_family);
-        close(sock_desc);
-        return -1;
-    } else {
-        memcpy(&addr, &ifreq.ifr_addr, sizeof(struct sockaddr_in));
-        device->addr = addr.sin_addr;
-    }
-
-    if (ioctl(sock_desc, SIOCGIFNETMASK, &ifreq) == -1) {
-        log_perror("ioctl");
-        close(sock_desc);
-        return -1;
-    } else {
-        memcpy(&addr, &ifreq.ifr_addr, sizeof(struct sockaddr_in));
-        device->netmask = addr.sin_addr;
-    }
-
-    device->subnet.s_addr = ((device->addr.s_addr) & (device->netmask.s_addr));
-
     close(sock_desc);
+
+    struct ifaddrs *ifa;
+    getifaddrs(&ifa);
+    struct ifaddrs *ifa_p = ifa;
+    device->addr6_list_length = 0;
+    while (ifa_p != NULL) {
+        if (strcmp(ifa_p->ifa_name, device->netif_name) == 0 && ifa_p->ifa_addr->sa_family == AF_INET6) {
+            device->addr6_list_length++;
+        }
+        ifa_p = ifa_p->ifa_next;
+    }
+    if ((device->addr6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
+        log_perror("calloc");
+        return -1;
+    }
+    if ((device->subnet6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
+        free(device->addr6_list);
+        log_perror("calloc");
+        return -1;
+    }
+    if ((device->netmask6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
+        free(device->addr6_list);
+        free(device->subnet6_list);
+        log_perror("calloc");
+        return -1;
+    }
+
+    ifa_p = ifa;
+    int index = 0;
+    while (ifa_p != NULL) {
+        if (strcmp(ifa_p->ifa_name, device->netif_name) == 0 && ifa_p->ifa_addr->sa_family != AF_PACKET) {
+            if (ifa_p->ifa_addr->sa_family == AF_INET) {
+                device->addr = ((struct sockaddr_in *)ifa_p->ifa_addr)->sin_addr;
+                device->netmask = ((struct sockaddr_in *)ifa_p->ifa_netmask)->sin_addr;
+                device->subnet.s_addr = device->addr.s_addr & device->netmask.s_addr;
+            } else {
+                device->addr6_list[index] = ((struct sockaddr_in6 *)ifa_p->ifa_addr)->sin6_addr;
+                device->netmask6_list[index] = ((struct sockaddr_in6 *)ifa_p->ifa_netmask)->sin6_addr;
+                for (int i = 0; i < 16; i++) {
+                    device->subnet6_list[index].s6_addr[i] = device->addr6_list[index].s6_addr[i] & device->netmask6_list[index].s6_addr[i];
+                }
+                index++;
+            }
+        }
+        ifa_p = ifa_p->ifa_next;
+    }
+    freeifaddrs(ifa);
+
     return 0;
 }

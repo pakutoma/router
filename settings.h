@@ -38,7 +38,13 @@ typedef struct {
     char *netif_name;
     int sock_desc;
     uint8_t hw_addr[ETH_ALEN];
-    struct in_addr addr, subnet, netmask;
+    struct in_addr addr;
+    struct in_addr subnet;
+    struct in_addr netmask;
+    struct in6_addr *addr6_list;
+    struct in6_addr *subnet6_list;
+    struct in6_addr *netmask6_list;
+    uint32_t addr6_list_length;
     adv_settings_t adv_settings;
 } device_t;
 
