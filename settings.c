@@ -33,7 +33,7 @@ int init_settings(char *filepath) {
         return -1;
     }
     set_log_mode(settings.log_mode.enable_log_stdout, settings.log_mode.enable_log_error);
-    print_settings();
+    //print_settings();
     return 0;
 }
 
@@ -116,7 +116,7 @@ void print_settings() {
         log_stdout("            adv_reachable_time: %d\n", settings.devices[i].adv_settings.adv_reachable_time);
         log_stdout("            adv_retrans_timer: %d\n", settings.devices[i].adv_settings.adv_retrans_timer);
         log_stdout("            adv_cur_hop_limit: %d\n", settings.devices[i].adv_settings.adv_cur_hop_limit);
-        log_stdout("            adv_default_life_time: %d\n", settings.devices[i].adv_settings.adv_default_life_time);
+        log_stdout("            adv_default_lifetime: %d\n", settings.devices[i].adv_settings.adv_default_lifetime);
         log_stdout("            adv_prefix_list_length: %d\n", settings.devices[i].adv_settings.adv_prefix_list_length);
         log_stdout("            prefix_list:\n");
         for (int j = 0; j < settings.devices[i].adv_settings.adv_prefix_list_length; j++) {

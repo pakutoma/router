@@ -24,8 +24,8 @@ typedef struct {
     uint32_t adv_link_mtu;
     uint32_t adv_reachable_time;
     uint32_t adv_retrans_timer;
-    uint32_t adv_cur_hop_limit;
-    uint32_t adv_default_life_time;
+    uint8_t adv_cur_hop_limit;
+    uint16_t adv_default_lifetime;
     adv_prefix_t *adv_prefix_list;
     uint32_t adv_prefix_list_length;
     struct in6_addr *adv_recursive_dns_server_list;

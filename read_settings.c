@@ -109,7 +109,7 @@ int parse_if_settings(device_t *device, xmlNode *if_root) {
         } else if (xmlStrcmp(node->name, BAD_CAST "AdvCurHopLimit") == 0) {
             device->adv_settings.adv_cur_hop_limit = atoi((char *)node->children->content);
         } else if (xmlStrcmp(node->name, BAD_CAST "AdvDefaultLifetime") == 0) {
-            device->adv_settings.adv_default_life_time = atoi((char *)node->children->content);
+            device->adv_settings.adv_default_lifetime = atoi((char *)node->children->content);
         } else if (xmlStrcmp(node->name, BAD_CAST "AdvPrefixList") == 0) {
             device->adv_settings.adv_prefix_list_length = count_children(node->children);
             if ((device->adv_settings.adv_prefix_list = calloc(device->adv_settings.adv_prefix_list_length, sizeof(adv_prefix_t))) == NULL) {

@@ -1,7 +1,7 @@
 #include "checksum.h"
-#include "settings.h"
 #include "ether_frame.h"
 #include "log.h"
+#include "settings.h"
 #include "timer.h"
 #include <errno.h>
 #include <netinet/if_ether.h>

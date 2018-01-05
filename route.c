@@ -2,6 +2,7 @@
 #include "arp_packet.h"
 #include "arp_table.h"
 #include "arp_waiting_list.h"
+#include "create_icmpv6.h"
 #include "ether_frame.h"
 #include "event.h"
 #include "ip_packet.h"
@@ -27,10 +28,11 @@ void process_packet(ether_frame_t *received_frame);
 void send_frames(int sock_desc);
 void receive_frames(int sock_desc, struct mmsghdr *mmsg_hdrs);
 bool is_sock_desc(struct epoll_event *event);
+int send_router_advertisement(int sock_desc);
 
 static int sec_timer_fd;
-static const struct itimerspec sec_timer = {{1, 0}, {1, 0}};
 static struct mmsghdr mmsg_hdrs[UIO_MAXIOV];
+uint32_t *next_ra_counter;
 
 int route() {
     struct epoll_event *event;
@@ -57,6 +59,17 @@ int route() {
             uint64_t t;
             read(sec_timer_fd, &t, sizeof(uint64_t));
             remove_timeout_cache();
+            for (size_t i = 0; i < get_devices_length(); i++) {
+                uint32_t min = get_device(i)->adv_settings.min_rtr_adv_interval;
+                uint32_t max = get_device(i)->adv_settings.max_rtr_adv_interval;
+                if (next_ra_counter[i] == 0) {
+                    if (send_router_advertisement(i) == -1) {
+                        return -1;
+                    }
+                    next_ra_counter[i] = (rand() % (max - min)) + min;
+                }
+                next_ra_counter[i]--;
+            }
         }
         /*print_waiting_list();
         print_arp_table();*/
@@ -106,11 +119,24 @@ int init_route() {
         log_perror("timerfd_create");
         return -1;
     }
+    const struct itimerspec sec_timer = {{1, 0}, {1, 0}};
     if (timerfd_settime(sec_timer_fd, 0, &sec_timer, NULL) == -1) {
         return -1;
     }
     if (add_event(sec_timer_fd, EPOLLIN) == -1) {
         return -1;
+    }
+
+    srand(time(NULL));
+    if ((next_ra_counter = calloc(get_devices_length(), sizeof(uint32_t))) == NULL) {
+        log_perror("calloc");
+        return -1;
+    }
+    for (size_t i = 0; i < get_devices_length(); i++) {
+        uint32_t min = get_device(i)->adv_settings.min_rtr_adv_interval;
+        uint32_t max = get_device(i)->adv_settings.max_rtr_adv_interval;
+        uint32_t next = (rand() % (max - min)) + min;
+        next_ra_counter[i] = next > MAX_INITIAL_RTR_ADVERT_INTERVAL ? MAX_INITIAL_RTR_ADVERT_INTERVAL : next;
     }
 
     for (size_t i = 0; i < UIO_MAXIOV; i++) {
@@ -155,6 +181,14 @@ void process_packet(ether_frame_t *received_frame) {
             free(received_frame);
             break;
     }
+}
+
+int send_router_advertisement(int index) {
+    ether_frame_t *ra_frame;
+    if ((ra_frame = create_router_advertisement(index, false, NULL, NULL)) == NULL) {
+        return -1;
+    }
+    return enqueue_send_queue(ra_frame);
 }
 
 void send_frames(int sock_desc) {
