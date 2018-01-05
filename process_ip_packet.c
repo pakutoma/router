@@ -31,6 +31,7 @@ int process_ip_packet(ether_frame_t *ether_frame) {
 
     device_t *received_device;
     if ((received_device = find_device_by_macaddr(ether_frame->header.ether_dhost)) == NULL) {
+        //マルチキャストを転送しない
         log_stdout("Couldn't find received device.\n");
         return -1;
     }
