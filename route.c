@@ -1,12 +1,13 @@
 #define _GNU_SOURCE
-#include "arp_packet.h"
 #include "arp_table.h"
 #include "arp_waiting_list.h"
 #include "create_icmpv6.h"
 #include "ether_frame.h"
 #include "event.h"
-#include "ip_packet.h"
 #include "log.h"
+#include "process_arp_packet.h"
+#include "process_ip_packet.h"
+#include "process_ipv6_packet.h"
 #include "receive_queue.h"
 #include "send_queue.h"
 #include "settings.h"
@@ -171,9 +172,10 @@ void process_packet(ether_frame_t *received_frame) {
             break;
         case ETHERTYPE_IPV6:
             log_stdout("ETHERTYPE: IPv6\n");
-            //process_ipv6_packet(received_frame);
-            free(received_frame->payload);
-            free(received_frame);
+            if (process_ipv6_packet(received_frame) == -1) {
+                free(received_frame->payload);
+                free(received_frame);
+            }
             break;
         default:
             log_stdout("ETHERTYPE: UNKNOWN\n");

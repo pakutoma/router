@@ -153,21 +153,5 @@ ether_frame_t *create_router_advertisement(int device_index, bool is_reply, stru
     }
 
     ra_header->nd_ra_cksum = calc_icmp6_checksum(ip6_header);
-    log_error("checksum: %x\n", ra_header->nd_ra_cksum);
-
-    uint8_t *buf;
-    int size = pack_ethernet_frame(&buf, icmp6_frame);
-    log_stdout("---%s---", __func__);
-    uint8_t *ptr = buf;
-    for (int i = 0; i < size; i++) {
-        if (i % 10 == 0) {
-            log_stdout("\n%04d: ", i / 10 + 1);
-        }
-        log_stdout("%02x ", *ptr);
-        ptr++;
-    }
-    log_stdout("\n");
-    log_stdout("---end %s---\n", __func__);
-
     return icmp6_frame;
 }

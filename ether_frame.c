@@ -13,7 +13,7 @@
 #define ETHERNET_FRAME_LOWER_LIMIT_SIZE 64
 #define PACKET_LOWER_LIMIT_SIZE 46
 
-int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame) {
+int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame, int index) {
     uint8_t *ptr = buf;
 
     if ((*received_frame = calloc(1, sizeof(ether_frame_t))) == NULL) {
@@ -29,6 +29,9 @@ int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int siz
     }
     memcpy((*received_frame)->payload, ptr, sizeof(uint8_t) * (*received_frame)->payload_size);
     ptr += (*received_frame)->payload_size;
+
+    (*received_frame)->has_index = true;
+    (*received_frame)->index = index;
 
     return 0;
 }

@@ -63,7 +63,7 @@ ether_frame_t *dequeue_receive_queue() {
     void *raw_frame;
     size_t size = unpack_mmsghdr(&raw_frame, mmsg_hdr);
     ether_frame_t *unpacked_frame;
-    unpack_ethernet_frame(raw_frame, size, &unpacked_frame);
+    unpack_ethernet_frame(raw_frame, size, &unpacked_frame, index);
 
     if (head[index] + 1 == QUEUE_SIZE) {
         head[index] = 0;
