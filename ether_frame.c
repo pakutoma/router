@@ -13,37 +13,6 @@
 #define ETHERNET_FRAME_LOWER_LIMIT_SIZE 64
 #define PACKET_LOWER_LIMIT_SIZE 46
 
-int receive_ethernet_frame(int sock_desc, ether_frame_t **received_frame) {
-
-    int size;
-    uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE] = {0};
-
-    if ((size = read(sock_desc, buf, sizeof(buf))) <= 0) {
-        log_perror("read");
-        return -1;
-    }
-
-#if DEBUG
-    log_stdout("---%s---", __func__);
-    uint8_t *ptr = buf;
-    for (int i = 0; i < size; i++) {
-        if (i % 10 == 0) {
-            log_stdout("\n%04d: ", i / 10 + 1);
-        }
-        log_stdout("%02x ", *ptr);
-        ptr++;
-    }
-    log_stdout("\n");
-    log_stdout("---end %s---\n", __func__);
-#endif
-
-    if (unpack_ethernet_frame(buf, size, received_frame) == -1) {
-        return -1;
-    }
-
-    return size;
-}
-
 int unpack_ethernet_frame(uint8_t buf[ETHERNET_FRAME_HIGHER_LIMIT_SIZE], int size, ether_frame_t **received_frame) {
     uint8_t *ptr = buf;
 
