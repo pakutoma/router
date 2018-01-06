@@ -71,6 +71,21 @@ device_t *find_device_by_ipaddr(uint32_t ipaddr) {
     return NULL;
 }
 
+device_t *find_device_by_ipv6addr(struct in6_addr *ipaddr) {
+    for (int i = 0; i < settings.devices_length; i++) {
+        for (size_t j = 0; j < settings.devices[i].addr6_list_length; j++) {
+            struct in6_addr subnet;
+            for (size_t k = 0; k < 16; k++) {
+                subnet.s6_addr[k] = ipaddr->s6_addr[k] & settings.devices[i].netmask6_list[j].s6_addr[k];
+            }
+            if (memcmp(settings.devices[i].subnet6_list[j].s6_addr, subnet.s6_addr, 16 * sizeof(uint8_t)) == 0) {
+                return &settings.devices[i];
+            }
+        }
+    }
+    return NULL;
+}
+
 int find_device_index_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
     for (int i = 0; i < settings.devices_length; i++) {
         if (memcmp(settings.devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {

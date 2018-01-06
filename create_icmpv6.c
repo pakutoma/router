@@ -21,7 +21,7 @@ ether_frame_t *create_router_advertisement(int device_index, bool is_reply, stru
     device_t *device = get_device(device_index);
     adv_settings_t *adv_settings = &device->adv_settings;
 
-    int header_option_size = sizeof(struct nd_opt_hdr) + sizeof(uint8_t) * 6;
+    int header_option_size = sizeof(struct nd_opt_hdr) + sizeof(uint8_t) * ETH_ALEN;
     header_option_size += sizeof(struct nd_opt_prefix_info) * adv_settings->adv_prefix_list_length;
     header_option_size += adv_settings->adv_link_mtu == 0 ? 0 : sizeof(struct nd_opt_mtu);
     if (adv_settings->adv_recursive_dns_server_list_length != 0) {
@@ -153,5 +153,69 @@ ether_frame_t *create_router_advertisement(int device_index, bool is_reply, stru
     }
 
     ra_header->nd_ra_cksum = calc_icmp6_checksum(ip6_header);
+    return icmp6_frame;
+}
+
+ether_frame_t *create_neighbor_solicitation(struct in6_addr *ipaddr, bool is_address_resolution) {
+    ether_frame_t *icmp6_frame;
+
+    if ((icmp6_frame = calloc(1, sizeof(ether_frame_t))) == NULL) {
+        log_perror("calloc");
+        return NULL;
+    }
+
+    device_t *device = find_device_by_ipv6addr(ipaddr);
+
+    int header_option_size = sizeof(struct nd_opt_hdr) + sizeof(uint8_t) * ETH_ALEN;
+
+    if ((icmp6_frame->payload = calloc(1, sizeof(struct ip6_hdr) + sizeof(struct nd_neighbor_solicit) + header_option_size)) == NULL) {
+        log_perror("calloc");
+        return NULL;
+    }
+    icmp6_frame->payload_size = sizeof(struct ip6_hdr) + sizeof(struct nd_neighbor_solicit) + header_option_size;
+
+    memcpy(icmp6_frame->header.ether_shost, device->hw_addr, sizeof(uint8_t) * ETH_ALEN);
+    icmp6_frame->header.ether_dhost[0] = 0x33;
+    icmp6_frame->header.ether_dhost[1] = 0x33;
+    icmp6_frame->header.ether_dhost[2] = 0x00;
+    icmp6_frame->header.ether_dhost[3] = 0x00;
+    icmp6_frame->header.ether_dhost[4] = 0x00;
+    icmp6_frame->header.ether_dhost[5] = 0x01;
+
+    icmp6_frame->header.ether_type = htons(ETHERTYPE_IPV6);
+
+    struct ip6_hdr *ip6_header;
+    ip6_header = (struct ip6_hdr *)icmp6_frame->payload;
+
+    ip6_header->ip6_flow = 0;
+    ip6_header->ip6_nxt = IPPROTO_ICMPV6;
+    ip6_header->ip6_plen = htons(sizeof(struct nd_neighbor_solicit) + header_option_size);
+    ip6_header->ip6_hlim = 0xFF;
+    ip6_header->ip6_vfc = 6 << 4 | 0;
+
+    ip6_header->ip6_src = device->addr6_list[0];
+    if (is_address_resolution) {
+        inet_pton(AF_INET6, "ff02::1:ffff:ffff", &ip6_header->ip6_dst);
+        ip6_header->ip6_dst.s6_addr[13] = ipaddr->s6_addr[13];
+        ip6_header->ip6_dst.s6_addr[14] = ipaddr->s6_addr[14];
+        ip6_header->ip6_dst.s6_addr[15] = ipaddr->s6_addr[15];
+    } else {
+        ip6_header->ip6_dst = *ipaddr;
+    }
+
+    struct nd_neighbor_solicit *ns_header;
+    ns_header = (struct nd_neighbor_solicit *)(ip6_header + 1);
+    ns_header->nd_ns_type = ND_NEIGHBOR_SOLICIT;
+    ns_header->nd_ns_code = 0;
+    ns_header->nd_ns_reserved = 0;
+    ns_header->nd_ns_target = *ipaddr;
+
+    struct nd_opt_hdr *linklayer_header = (struct nd_opt_hdr *)(ns_header + 1);
+    linklayer_header->nd_opt_type = ND_OPT_SOURCE_LINKADDR;
+    linklayer_header->nd_opt_len = 1;
+    uint8_t *linklayer_address = (uint8_t *)(linklayer_header + 1);
+    memcpy(linklayer_address, device->hw_addr, sizeof(uint8_t) * ETH_ALEN);
+
+    ns_header->nd_ns_cksum = calc_icmp6_checksum(ip6_header);
     return icmp6_frame;
 }
