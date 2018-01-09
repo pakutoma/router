@@ -52,17 +52,10 @@
                     <AdvPreferredLifetime>604800</AdvPreferredLifetime>
                     <AdvAutonomousFlag>true</AdvAutonomousFlag>
                 </AdvPrefix>
-                <AdvPrefix>
-                    <AdvAddressPrefix>2001:db8:4::/64</AdvAddressPrefix>
-                    <AdvValidLifetime>2592000</AdvValidLifetime>
-                    <AdvOnLinkFlag>true</AdvOnLinkFlag>
-                    <AdvPreferredLifetime>604800</AdvPreferredLifetime>
-                    <AdvAutonomousFlag>true</AdvAutonomousFlag>
-                </AdvPrefix>
             </AdvPrefixList>
             <AdvRecursiveDNSServerList>
-                <AdvRecursiveDNSServer>2001:db8:4::4</AdvRecursiveDNSServer>
-                <AdvRecursiveDNSServer>2001:db8:4::5</AdvRecursiveDNSServer>
+                <AdvRecursiveDNSServer>2001:db8:3::4</AdvRecursiveDNSServer>
+                <AdvRecursiveDNSServer>2001:db8:3::5</AdvRecursiveDNSServer>
             </AdvRecursiveDNSServerList>
             <AdvDNSSearchList>
                 <AdvDNSSearchSuffix>example.pw</AdvDNSSearchSuffix>
@@ -73,7 +66,7 @@
     <NextRouterAddress>192.168.20.1</NextRouterAddress>
     <NextRouterIPv6Address>2001:db8:3::1</NextRouterIPv6Address>
     <LogMode>
-        <EnableLogStdout>true</EnableLogStdout>
+        <EnableLogStdout>false</EnableLogStdout>
         <EnableLogError>true</EnableLogError>
     </LogMode>
 </Settings>

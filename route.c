@@ -5,6 +5,8 @@
 #include "ether_frame.h"
 #include "event.h"
 #include "log.h"
+#include "ndp_waiting_list.h"
+#include "neighbor_cache.h"
 #include "process_arp_packet.h"
 #include "process_ip_packet.h"
 #include "process_ipv6_packet.h"
@@ -60,6 +62,7 @@ int route() {
             uint64_t t;
             read(sec_timer_fd, &t, sizeof(uint64_t));
             remove_timeout_cache();
+            update_status();
             for (size_t i = 0; i < get_devices_length(); i++) {
                 uint32_t min = get_device(i)->adv_settings.min_rtr_adv_interval;
                 uint32_t max = get_device(i)->adv_settings.max_rtr_adv_interval;
@@ -96,7 +99,13 @@ int init_route() {
     if (init_arp_table() == -1) {
         return -1;
     }
+    if (init_neighbor_cache() == -1) {
+        return -1;
+    }
     if (init_arp_waiting_list() == -1) {
+        return -1;
+    }
+    if (init_ndp_waiting_list() == -1) {
         return -1;
     }
     if (init_event() == -1) {
@@ -128,7 +137,6 @@ int init_route() {
         return -1;
     }
 
-    srand(time(NULL));
     if ((next_ra_counter = calloc(get_devices_length(), sizeof(uint32_t))) == NULL) {
         log_perror("calloc");
         return -1;

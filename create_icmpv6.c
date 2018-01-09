@@ -67,7 +67,12 @@ ether_frame_t *create_router_advertisement(int device_index, bool is_reply, stru
     ip6_header->ip6_hlim = 0xFF;
     ip6_header->ip6_vfc = 6 << 4 | 0;
 
-    ip6_header->ip6_src = device->addr6_list[0];
+    for (size_t i = 0; i < device->addr6_list_length; i++) {
+        if (device->addr6_list[i].s6_addr[0] == 0xfe && device->addr6_list[i].s6_addr[1] & 0x80) {
+            ip6_header->ip6_src = device->addr6_list[i];
+        }
+    }
+
     if (is_reply) {
         ip6_header->ip6_dst = *ipaddr;
     } else {

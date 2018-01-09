@@ -1,6 +1,7 @@
 #include "create_icmpv6.h"
 #include "log.h"
 #include "send_queue.h"
+#include <arpa/inet.h>
 #include <net/ethernet.h>
 #include <netinet/icmp6.h>
 #include <netinet/in.h>
@@ -50,8 +51,9 @@ typedef struct neighbor_cache_entry {
 
 void remove_timeout_cache();
 void create_entry(struct in6_addr *new_ipaddr, struct ether_addr *new_macaddr, neighbor_cache_entry_status_t status);
-struct ether_addr *find_source_linklayer_option(struct ip6_hdr *ip6_header);
+struct ether_addr *find_linklayer_option(struct ip6_hdr *ip6_header);
 neighbor_cache_entry_t *find_entry_by_ipaddr(struct in6_addr *ipaddr);
+void print_neighbor_cache();
 
 static neighbor_cache_entry_t *head = NULL;
 static uint32_t reachable_time = REACHABLE_TIME;
@@ -141,7 +143,7 @@ void analyze_ndp_packet(ether_frame_t *ndp_frame) {
         }
 
         struct nd_neighbor_advert *na_header = (struct nd_neighbor_advert *)icmp6_header;
-        struct ether_addr *src_macaddr = find_source_linklayer_option(ip6_header);
+        struct ether_addr *src_macaddr = find_linklayer_option(ip6_header);
         if (src_macaddr == NULL) {
             entry->is_router = na_header->nd_na_flags_reserved & ND_NA_FLAG_ROUTER;
             return;
@@ -182,7 +184,7 @@ void analyze_ndp_packet(ether_frame_t *ndp_frame) {
             }
         }
     } else {
-        struct ether_addr *src_macaddr = find_source_linklayer_option(ip6_header);
+        struct ether_addr *src_macaddr = find_linklayer_option(ip6_header);
         if (src_macaddr == NULL) {
             return;
         }
@@ -204,8 +206,8 @@ void analyze_ndp_packet(ether_frame_t *ndp_frame) {
     }
 }
 
-struct ether_addr *find_source_linklayer_option(struct ip6_hdr *ip6_header) {
-    struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)ip6_header;
+struct ether_addr *find_linklayer_option(struct ip6_hdr *ip6_header) {
+    struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
     uint16_t length = ntohs(ip6_header->ip6_plen);
     uint16_t current = 0;
     struct nd_opt_hdr *option_ptr;
@@ -218,6 +220,10 @@ struct ether_addr *find_source_linklayer_option(struct ip6_hdr *ip6_header) {
             option_ptr = (struct nd_opt_hdr *)(((struct nd_router_solicit *)icmp6_header) + 1);
             current += sizeof(struct nd_router_solicit);
             break;
+        case ND_NEIGHBOR_ADVERT:
+            option_ptr = (struct nd_opt_hdr *)(((struct nd_neighbor_advert *)icmp6_header) + 1);
+            current += sizeof(struct nd_neighbor_advert);
+            break;
         case ND_NEIGHBOR_SOLICIT:
             option_ptr = (struct nd_opt_hdr *)(((struct nd_neighbor_solicit *)icmp6_header) + 1);
             current += sizeof(struct nd_neighbor_solicit);
@@ -226,7 +232,7 @@ struct ether_addr *find_source_linklayer_option(struct ip6_hdr *ip6_header) {
             return NULL;
     }
     while (current < length) {
-        if (option_ptr->nd_opt_type == ND_OPT_SOURCE_LINKADDR) {
+        if (option_ptr->nd_opt_type == ND_OPT_SOURCE_LINKADDR || option_ptr->nd_opt_type == ND_OPT_TARGET_LINKADDR) {
             return (struct ether_addr *)(option_ptr + 1);
         }
         current += option_ptr->nd_opt_len * 8;
@@ -236,6 +242,7 @@ struct ether_addr *find_source_linklayer_option(struct ip6_hdr *ip6_header) {
 }
 
 void update_status() {
+    print_neighbor_cache();
     neighbor_cache_entry_t *entry = head;
     time_t now = time(NULL);
     if (renew_reachable_time_timer - now > RENEW_REACHABLE_TIME_INTERVAL) {
@@ -309,14 +316,11 @@ void update_status() {
 void print_neighbor_cache() {
     neighbor_cache_entry_t *entry = head->next;
     log_stdout("---%s---\n", __func__);
-    uint8_t *ptr;
     time_t now = time(NULL);
+    char buf[100];
     while (entry != NULL) {
-        ptr = (uint8_t *)&entry->ipaddr;
-        log_stdout("%d.%d.%d.%d->", ptr[0], ptr[1], ptr[2], ptr[3]);
-        ptr = entry->macaddr.ether_addr_octet;
-        log_stdout("%02x:%02x:%02x:%02x:%02x:%02x", ptr[0], ptr[1], ptr[2], ptr[3], ptr[4], ptr[5]);
-        log_stdout("(%d sec)\n", now - entry->timer);
+        log_stdout("addr: %s\n", inet_ntop(AF_INET6, &entry->ipaddr, buf, 100));
+        log_stdout("status: %d(%d sec)\n", entry->status, now - entry->timer);
         entry = entry->next;
     }
     log_stdout("---end %s---\n", __func__);

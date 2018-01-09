@@ -49,6 +49,10 @@ struct in_addr get_next_router_addr() {
     return settings.next_router_addr;
 }
 
+struct in6_addr get_next_router_ipv6_addr() {
+    return settings.next_router_ipv6_addr;
+}
+
 uint32_t get_gateway_device_index() {
     return settings.gateway_device_index;
 }

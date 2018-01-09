@@ -71,4 +71,5 @@ int init_settings(char *filepath);
 device_t *get_device(int index);
 uint32_t get_devices_length();
 struct in_addr get_next_router_addr();
+struct in6_addr get_next_router_ipv6_addr();
 uint32_t get_gateway_device_index();
