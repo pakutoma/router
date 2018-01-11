@@ -10,7 +10,6 @@ int process_ndp_packet(ether_frame_t *ether_frame) {
     struct ip6_hdr *ip6_header = (struct ip6_hdr *)ether_frame->payload;
     struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
     if (icmp6_header->icmp6_type == ND_ROUTER_SOLICIT) {
-        log_error("ROUTER SOLICIT\n");
         ether_frame_t *ra_frame;
         if ((ra_frame = create_router_advertisement(ether_frame->index, true, &ip6_header->ip6_src, ether_frame->header.ether_shost)) == NULL) {
             return -1;
