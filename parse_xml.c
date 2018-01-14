@@ -87,7 +87,7 @@ xml_node_t *create_leaf_node(char *begin, char *end) {
         return NULL;
     }
     memcpy(node->content, begin, end - begin);
-    *(node->content + (end - begin) + 1) = '\0';
+    *(node->content + (end - begin)) = '\0';
     return node;
 }
 

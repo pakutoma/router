@@ -1,5 +1,6 @@
 #include "create_icmpv6.h"
 #include "log.h"
+#include "ndp_waiting_list.h"
 #include "send_queue.h"
 #include <arpa/inet.h>
 #include <net/ethernet.h>
@@ -151,7 +152,7 @@ void analyze_ndp_packet(ether_frame_t *ndp_frame) {
 
         if (entry->status == INCOMPLETE) {
             entry->macaddr = *src_macaddr;
-            //TODO: send packets in waiting-list
+            send_waiting_frame(&entry->ipaddr, &entry->macaddr);
             if (na_header->nd_na_flags_reserved & ND_NA_FLAG_SOLICITED) {
                 entry->status = REACHABLE;
                 entry->timer = now;
@@ -194,7 +195,7 @@ void analyze_ndp_packet(ether_frame_t *ndp_frame) {
             create_entry(&ip6_header->ip6_src, src_macaddr, STALE);
         } else {
             if (entry->status == INCOMPLETE) {
-                //TODO: send packets in waiting-list
+                send_waiting_frame(&entry->ipaddr, &entry->macaddr);
                 entry->status = STALE;
             } else {
                 if (memcmp(entry->macaddr.ether_addr_octet, src_macaddr->ether_addr_octet, ETH_ALEN * sizeof(uint8_t)) != 0) {
