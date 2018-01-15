@@ -11,7 +11,9 @@ int parse_settings(settings_t *settings, xml_node_t *node);
 int parse_if_settings(device_t *device, xml_node_t *node);
 int parse_adv_prefix(adv_prefix_t *adv_prefix, xml_node_t *node);
 int construct_dns_search_suffix(char *domain, char **dns_message);
+int register_ipv6_address_list(device_t *device, xml_node_t *node);
 int count_children(xml_node_t *node);
+uint8_t calc_netmask(int count, int maskbit);
 
 int read_settings_from_file(settings_t *settings, char *filepath) {
     xml_node_t *root;
@@ -77,6 +79,10 @@ int parse_if_settings(device_t *device, xml_node_t *if_root) {
                 return -1;
             }
             strcpy(device->netif_name, (char *)node->children->content);
+        } else if (strcmp(node->name, "IPv6AddressList") == 0) {
+            if (register_ipv6_address_list(device, node) == -1) {
+                return -1;
+            }
         } else if (strcmp(node->name, "IsRouter") == 0) {
             device->adv_settings.is_router = strcmp(node->children->content, "true") == 0;
         } else if (strcmp(node->name, "AdvSendAdvertisements") == 0) {
@@ -233,4 +239,47 @@ int count_children(xml_node_t *node) {
         node = node->next;
     }
     return count;
+}
+
+int register_ipv6_address_list(device_t *device, xml_node_t *node) {
+    device->addr6_list_length = count_children(node->children);
+    if ((device->addr6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
+        log_perror("calloc");
+        return -1;
+    }
+    if ((device->subnet6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
+        free(device->addr6_list);
+        log_perror("calloc");
+        return -1;
+    }
+    if ((device->netmask6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
+        free(device->addr6_list);
+        free(device->subnet6_list);
+        log_perror("calloc");
+        return -1;
+    }
+
+    int index = 0;
+    xml_node_t *addr_node = node->children;
+    while (addr_node != NULL) {
+        char *slash_ptr;
+        if ((slash_ptr = strchr((char *)addr_node->children->content, '/')) == NULL) {
+            log_error("address prefix length is not defined.\n");
+            return -1;
+        }
+        int address_len = slash_ptr - (char *)addr_node->children->content;
+        char address[40];
+        strncpy(address, (char *)addr_node->children->content, address_len);
+        *(address + address_len) = '\0';
+        int netmask_length = atoi(slash_ptr + 1);
+        inet_pton(AF_INET6, address, &device->addr6_list[index]);
+        for (int i = 0; i < 16; i++) {
+            device->netmask6_list[index].s6_addr[i] = calc_netmask(i, netmask_length);
+            device->subnet6_list[index].s6_addr[i] = device->addr6_list[index].s6_addr[i] & device->netmask6_list[index].s6_addr[i];
+        }
+        index++;
+        addr_node = addr_node->next;
+    }
+
+    return 0;
 }

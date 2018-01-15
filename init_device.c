@@ -20,11 +20,25 @@
 
 int init_raw_socket(char *device_name);
 int get_device_info(device_t *device);
+int add_linklocal_unicast_address(device_t *device);
 
 int init_device(device_t *device) {
     if (get_device_info(device) == -1) {
         return -1;
     }
+
+    bool exists_lua = false;
+    for (size_t i = 0; i < device->addr6_list_length; i++) {
+        if (device->addr6_list[i].s6_addr[0] == 0xfe && device->addr6_list[i].s6_addr[1] & 0x80) {
+            exists_lua = true;
+        }
+    }
+    if (!exists_lua) {
+        if (add_linklocal_unicast_address(device) == -1) {
+            return -1;
+        }
+    }
+
     if ((device->sock_desc = init_raw_socket(device->netif_name)) == -1) {
         return -1;
     }
@@ -103,49 +117,58 @@ int get_device_info(device_t *device) {
     struct ifaddrs *ifa;
     getifaddrs(&ifa);
     struct ifaddrs *ifa_p = ifa;
-    device->addr6_list_length = 0;
-    while (ifa_p != NULL) {
-        if (strcmp(ifa_p->ifa_name, device->netif_name) == 0 && ifa_p->ifa_addr->sa_family == AF_INET6) {
-            device->addr6_list_length++;
-        }
-        ifa_p = ifa_p->ifa_next;
-    }
-    if ((device->addr6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
-        log_perror("calloc");
-        return -1;
-    }
-    if ((device->subnet6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
-        free(device->addr6_list);
-        log_perror("calloc");
-        return -1;
-    }
-    if ((device->netmask6_list = calloc(device->addr6_list_length, sizeof(struct in6_addr))) == NULL) {
-        free(device->addr6_list);
-        free(device->subnet6_list);
-        log_perror("calloc");
-        return -1;
-    }
-
-    ifa_p = ifa;
-    int index = 0;
     while (ifa_p != NULL) {
         if (strcmp(ifa_p->ifa_name, device->netif_name) == 0 && ifa_p->ifa_addr->sa_family != AF_PACKET) {
             if (ifa_p->ifa_addr->sa_family == AF_INET) {
                 device->addr = ((struct sockaddr_in *)ifa_p->ifa_addr)->sin_addr;
                 device->netmask = ((struct sockaddr_in *)ifa_p->ifa_netmask)->sin_addr;
                 device->subnet.s_addr = device->addr.s_addr & device->netmask.s_addr;
-            } else {
-                device->addr6_list[index] = ((struct sockaddr_in6 *)ifa_p->ifa_addr)->sin6_addr;
-                device->netmask6_list[index] = ((struct sockaddr_in6 *)ifa_p->ifa_netmask)->sin6_addr;
-                for (int i = 0; i < 16; i++) {
-                    device->subnet6_list[index].s6_addr[i] = device->addr6_list[index].s6_addr[i] & device->netmask6_list[index].s6_addr[i];
-                }
-                index++;
             }
         }
         ifa_p = ifa_p->ifa_next;
     }
     freeifaddrs(ifa);
+
+    return 0;
+}
+
+int add_linklocal_unicast_address(device_t *device) {
+    device->addr6_list_length++;
+    struct in6_addr *tmp = realloc(device->addr6_list, device->addr6_list_length * sizeof(struct in6_addr));
+    if (tmp == NULL) {
+        log_perror("realloc");
+        return -1;
+    }
+    memset(tmp + (device->addr6_list_length - 1), 0, sizeof(struct in6_addr));
+    device->addr6_list = tmp;
+
+    tmp = realloc(device->subnet6_list, device->addr6_list_length * sizeof(struct in6_addr));
+    if (tmp == NULL) {
+        log_perror("realloc");
+        return -1;
+    }
+    memset(tmp + (device->addr6_list_length - 1), 0, sizeof(struct in6_addr));
+    device->subnet6_list = tmp;
+
+    tmp = realloc(device->netmask6_list, device->addr6_list_length * sizeof(struct in6_addr));
+    if (tmp == NULL) {
+        log_perror("realloc");
+        return -1;
+    }
+    memset(tmp + (device->addr6_list_length - 1), 0, sizeof(struct in6_addr));
+    device->netmask6_list = tmp;
+
+    int index = device->addr6_list_length - 1;
+    inet_pton(AF_INET6, "fe80::", &device->addr6_list[index]);
+    memcpy(&device->addr6_list[index].s6_addr[8], &device->hw_addr[0], 3);
+    device->addr6_list[index].s6_addr[11] = 0xff;
+    device->addr6_list[index].s6_addr[12] = 0xfe;
+    memcpy(&device->addr6_list[index].s6_addr[13], &device->hw_addr[3], 3);
+    device->addr6_list[index].s6_addr[8] |= 2;
+    for (int i = 0; i < 16; i++) {
+        device->netmask6_list[index].s6_addr[i] = calc_netmask(i, 64);
+        device->subnet6_list[index].s6_addr[i] = device->addr6_list[index].s6_addr[i] & device->netmask6_list[index].s6_addr[i];
+    }
 
     return 0;
 }

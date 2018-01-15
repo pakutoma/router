@@ -68,6 +68,7 @@ device_t *find_device_by_ipv6addr(struct in6_addr *ipaddr);
 int find_device_index_by_macaddr(uint8_t macaddr[ETH_ALEN]);
 int find_device_index_by_sock_desc(int sock_desc);
 int init_settings(char *filepath);
+uint8_t calc_netmask(int count, int maskbit);
 device_t *get_device(int index);
 uint32_t get_devices_length();
 struct in_addr get_next_router_addr();

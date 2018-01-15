@@ -3,6 +3,9 @@
     <Interfaces>
         <Interface>
             <InterfaceName>enp0s3</InterfaceName>
+            <IPv6AddressList>
+                <IPv6Address>2001:db8:1::1/64</IPv6Address>
+            </IPv6AddressList>
             <IsRouter>true</IsRouter>
             <AdvSendAdvertisements>true</AdvSendAdvertisements>
             <MaxRtrAdvInterval>600</MaxRtrAdvInterval>
@@ -33,6 +36,9 @@
         </Interface>
         <Interface>
             <InterfaceName>enp0s8</InterfaceName>
+            <IPv6AddressList>
+                <IPv6Address>2001:db8:2::1/64</IPv6Address>
+            </IPv6AddressList>
             <IsRouter>true</IsRouter>
             <AdvSendAdvertisements>true</AdvSendAdvertisements>
             <MaxRtrAdvInterval>600</MaxRtrAdvInterval>
@@ -46,7 +52,7 @@
             <AdvDefaultLifetime>1800</AdvDefaultLifetime>
             <AdvPrefixList>
                 <AdvPrefix>
-                    <AdvAddressPrefix>2001:db8:3::/64</AdvAddressPrefix>
+                    <AdvAddressPrefix>2001:db8:2::/64</AdvAddressPrefix>
                     <AdvValidLifetime>2592000</AdvValidLifetime>
                     <AdvOnLinkFlag>true</AdvOnLinkFlag>
                     <AdvPreferredLifetime>604800</AdvPreferredLifetime>
@@ -54,8 +60,8 @@
                 </AdvPrefix>
             </AdvPrefixList>
             <AdvRecursiveDNSServerList>
-                <AdvRecursiveDNSServer>2001:db8:3::4</AdvRecursiveDNSServer>
-                <AdvRecursiveDNSServer>2001:db8:3::5</AdvRecursiveDNSServer>
+                <AdvRecursiveDNSServer>2001:db8:2::4</AdvRecursiveDNSServer>
+                <AdvRecursiveDNSServer>2001:db8:2::5</AdvRecursiveDNSServer>
             </AdvRecursiveDNSServerList>
             <AdvDNSSearchList>
                 <AdvDNSSearchSuffix>example.pw</AdvDNSSearchSuffix>
@@ -64,7 +70,7 @@
         </Interface>
     </Interfaces>
     <NextRouterAddress>192.168.20.1</NextRouterAddress>
-    <NextRouterIPv6Address>2001:db8:3::1</NextRouterIPv6Address>
+    <NextRouterIPv6Address>2001:db8:2::1</NextRouterIPv6Address>
     <LogMode>
         <EnableLogStdout>false</EnableLogStdout>
         <EnableLogError>true</EnableLogError>

@@ -37,6 +37,17 @@ int init_settings(char *filepath) {
     return 0;
 }
 
+uint8_t calc_netmask(int count, int maskbit) {
+    int mask_len = maskbit - count * 8;
+    uint8_t mask = 0;
+    for (int i = 0; i < 8; i++) {
+        if (mask_len - i > 0) {
+            mask += 1 << (7 - i);
+        }
+    }
+    return mask;
+}
+
 device_t *get_device(int index) {
     return &settings.devices[index];
 }
