@@ -1,4 +1,4 @@
-#include "create_icmpv6.h"
+#include "create_ndp.h"
 #include "log.h"
 #include "ndp_waiting_list.h"
 #include "send_queue.h"

@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "arp_table.h"
 #include "arp_waiting_list.h"
-#include "create_icmpv6.h"
+#include "create_ndp.h"
 #include "ether_frame.h"
 #include "event.h"
 #include "log.h"
