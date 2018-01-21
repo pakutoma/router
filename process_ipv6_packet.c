@@ -29,9 +29,6 @@ int process_ipv6_packet(ether_frame_t *ether_frame) {
         struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
         if (icmp6_header->icmp6_type >= ND_ROUTER_SOLICIT && icmp6_header->icmp6_type <= ND_NEIGHBOR_ADVERT) {
             return process_ndp_packet(ether_frame);
-        } else {
-            log_stdout("an unknown ICMPv6 packet received.\n");
-            return -1;
         }
     }
 
