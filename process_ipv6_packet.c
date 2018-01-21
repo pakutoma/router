@@ -10,6 +10,7 @@
 #define TYPE_ICMPV6 58
 int decrement_hop_limit(struct ip6_hdr *header);
 int send_v6packet(ether_frame_t *ether_frame, struct ether_addr *src_macaddr, struct in6_addr *origin_device_ipaddr, struct in6_addr *neighbor_ipaddr);
+bool is_linklocal(struct ip6_hdr *header);
 
 int process_ipv6_packet(ether_frame_t *ether_frame) {
 
@@ -28,7 +29,15 @@ int process_ipv6_packet(ether_frame_t *ether_frame) {
         struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
         if (icmp6_header->icmp6_type >= ND_ROUTER_SOLICIT && icmp6_header->icmp6_type <= ND_NEIGHBOR_ADVERT) {
             return process_ndp_packet(ether_frame);
+        } else {
+            log_stdout("an unknown ICMPv6 packet received.\n");
+            return -1;
         }
+    }
+
+    if (is_linklocal(ip6_header)) {
+        log_stdout("Link-Local IPv6 Unicast Addresses can't route to other network.\n");
+        return -1;
     }
 
     if (decrement_hop_limit(ip6_header) == 0) {
@@ -71,4 +80,8 @@ int decrement_hop_limit(struct ip6_hdr *header) {
     }
     header->ip6_hlim = hlim;
     return hlim;
+}
+
+bool is_linklocal(struct ip6_hdr *header) {
+    return header->ip6_dst.s6_addr[0] == 0xfe && header->ip6_dst.s6_addr[1] == 0x80;
 }
