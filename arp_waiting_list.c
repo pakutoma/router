@@ -3,6 +3,7 @@
 #include "send_queue.h"
 #include <net/ethernet.h>
 #include <netinet/ip.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

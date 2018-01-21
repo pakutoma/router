@@ -64,8 +64,7 @@
                 <AdvRecursiveDNSServer>2001:db8:2::5</AdvRecursiveDNSServer>
             </AdvRecursiveDNSServerList>
             <AdvDNSSearchList>
-                <AdvDNSSearchSuffix>example.pw</AdvDNSSearchSuffix>
-                <AdvDNSSearchSuffix>example.jp</AdvDNSSearchSuffix>
+                <AdvDNSSearchSuffix>example.net</AdvDNSSearchSuffix>
             </AdvDNSSearchList>
         </Interface>
     </Interfaces>
