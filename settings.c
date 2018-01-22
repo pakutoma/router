@@ -68,6 +68,14 @@ uint32_t get_gateway_device_index() {
     return settings.gateway_device_index;
 }
 
+uint32_t get_ratelimit_bucket() {
+    return settings.ratelimit.bucket;
+}
+
+uint32_t get_ratelimit_token_per_second() {
+    return settings.ratelimit.token_per_second;
+}
+
 device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
     for (int i = 0; i < settings.devices_length; i++) {
         if (memcmp(settings.devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
@@ -170,6 +178,9 @@ void print_settings() {
     log_stdout("log_mode:\n");
     log_stdout("    enable_log_stdout: %s\n", settings.log_mode.enable_log_stdout ? "true" : "false");
     log_stdout("    enable_log_error: %s\n", settings.log_mode.enable_log_error ? "true" : "false");
+    log_stdout("ratelimit:\n");
+    log_stdout("    b: %d\n", settings.ratelimit.bucket);
+    log_stdout("    n: %d\n", settings.ratelimit.token_per_second);
     log_stdout("---end %s---\n", __func__);
 }
 

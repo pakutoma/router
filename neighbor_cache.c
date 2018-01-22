@@ -1,3 +1,4 @@
+#include "create_icmpv6.h"
 #include "create_ndp.h"
 #include "log.h"
 #include "ndp_waiting_list.h"
@@ -243,7 +244,7 @@ struct ether_addr *find_linklayer_option(struct ip6_hdr *ip6_header) {
 }
 
 void update_status() {
-    print_neighbor_cache();
+    //print_neighbor_cache();
     neighbor_cache_entry_t *entry = head;
     time_t now = time(NULL);
     if (renew_reachable_time_timer - now > RENEW_REACHABLE_TIME_INTERVAL) {
@@ -268,9 +269,9 @@ void update_status() {
                         entry->next->retransmit_counter++;
                         entry->next->timer = now;
                     } else {
-                        // TODO: send ICMPv6 address unreachable
                         neighbor_cache_entry_t *obsolete_entry = entry->next;
                         entry->next = entry->next->next;
+                        delete_destination_unreachable_nodes(&obsolete_entry->ipaddr);
                         free(obsolete_entry);
                         if (entry->next == NULL) {
                             return;

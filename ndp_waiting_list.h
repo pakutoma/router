@@ -3,3 +3,4 @@
 int init_ndp_waiting_list();
 int add_ndp_waiting_list(ether_frame_t *ether_frame, struct in6_addr *neighbor_ipaddr);
 void send_waiting_frame(struct in6_addr *ipaddr, struct ether_addr *macaddr);
+int delete_destination_unreachable_nodes(struct in6_addr *unreachable_ipaddr);

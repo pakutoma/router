@@ -10,3 +10,4 @@
 
 ether_frame_t *create_router_advertisement(int device_index, bool is_reply, struct in6_addr *ipaddr, uint8_t macaddr[ETH_ALEN]);
 ether_frame_t *create_neighbor_solicitation(struct in6_addr *ipaddr, bool is_address_resolution);
+ether_frame_t *create_neighbor_advertisement(int device_index, bool is_reply, struct in6_addr *target_ipaddr, struct in6_addr *ipaddr, struct ether_addr *macaddr);

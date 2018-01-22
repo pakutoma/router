@@ -224,3 +224,75 @@ ether_frame_t *create_neighbor_solicitation(struct in6_addr *ipaddr, bool is_add
     ns_header->nd_ns_cksum = calc_icmp6_checksum(ip6_header);
     return icmp6_frame;
 }
+
+ether_frame_t *create_neighbor_advertisement(int device_index, bool is_reply, struct in6_addr *target_ipaddr, struct in6_addr *ipaddr, struct ether_addr *macaddr) {
+    ether_frame_t *icmp6_frame;
+
+    if ((icmp6_frame = calloc(1, sizeof(ether_frame_t))) == NULL) {
+        log_perror("calloc");
+        return NULL;
+    }
+
+    device_t *device = get_device(device_index);
+
+    int header_option_size = sizeof(struct nd_opt_hdr) + sizeof(struct ether_addr);
+
+    icmp6_frame->payload_size = sizeof(struct ip6_hdr) + sizeof(struct nd_neighbor_advert) + header_option_size;
+    if ((icmp6_frame->payload = calloc(1, icmp6_frame->payload_size)) == NULL) {
+        log_perror("calloc");
+        return NULL;
+    }
+
+    memcpy(icmp6_frame->header.ether_shost, device->hw_addr, sizeof(uint8_t) * ETH_ALEN);
+    if (is_reply) {
+        memcpy(icmp6_frame->header.ether_dhost, macaddr->ether_addr_octet, ETH_ALEN);
+    } else {
+        icmp6_frame->header.ether_dhost[0] = 0x33;
+        icmp6_frame->header.ether_dhost[1] = 0x33;
+        icmp6_frame->header.ether_dhost[2] = 0x00;
+        icmp6_frame->header.ether_dhost[3] = 0x00;
+        icmp6_frame->header.ether_dhost[4] = 0x00;
+        icmp6_frame->header.ether_dhost[5] = 0x01;
+    }
+
+    icmp6_frame->header.ether_type = htons(ETHERTYPE_IPV6);
+
+    struct ip6_hdr *ip6_header;
+    ip6_header = (struct ip6_hdr *)icmp6_frame->payload;
+
+    ip6_header->ip6_flow = 0;
+    ip6_header->ip6_nxt = IPPROTO_ICMPV6;
+    ip6_header->ip6_plen = htons(sizeof(struct nd_neighbor_advert) + header_option_size);
+    ip6_header->ip6_hlim = 0xFF;
+    ip6_header->ip6_vfc = 6 << 4 | 0;
+
+    memcpy(ip6_header->ip6_src.s6_addr, device->addr6_list[0].s6_addr, INET_ADDRSTRLEN);
+    if (is_reply) {
+        memcpy(ip6_header->ip6_dst.s6_addr, ipaddr->s6_addr, INET_ADDRSTRLEN);
+    } else {
+        inet_pton(AF_INET6, "ff02::1:ffff:ffff", &ip6_header->ip6_dst);
+        ip6_header->ip6_dst.s6_addr[13] = ipaddr->s6_addr[13];
+        ip6_header->ip6_dst.s6_addr[14] = ipaddr->s6_addr[14];
+        ip6_header->ip6_dst.s6_addr[15] = ipaddr->s6_addr[15];
+    }
+
+    struct nd_neighbor_advert *na_header;
+    na_header = (struct nd_neighbor_advert *)(ip6_header + 1);
+    na_header->nd_na_type = ND_NEIGHBOR_ADVERT;
+    na_header->nd_na_code = 0;
+    if (is_reply) {
+        na_header->nd_na_flags_reserved = ND_NA_FLAG_ROUTER | ND_NA_FLAG_SOLICITED | ND_NA_FLAG_OVERRIDE;
+    } else {
+        na_header->nd_na_flags_reserved = ND_NA_FLAG_ROUTER | ND_NA_FLAG_OVERRIDE;
+    }
+    memcpy(na_header->nd_na_target.s6_addr, target_ipaddr->s6_addr, INET_ADDRSTRLEN);
+
+    struct nd_opt_hdr *linklayer_header = (struct nd_opt_hdr *)(na_header + 1);
+    linklayer_header->nd_opt_type = ND_OPT_SOURCE_LINKADDR;
+    linklayer_header->nd_opt_len = 1;
+    uint8_t *linklayer_address = (uint8_t *)(linklayer_header + 1);
+    memcpy(linklayer_address, device->hw_addr, sizeof(uint8_t) * ETH_ALEN);
+
+    na_header->nd_na_cksum = calc_icmp6_checksum(ip6_header);
+    return icmp6_frame;
+}

@@ -1,3 +1,4 @@
+#include "create_icmpv6.h"
 #include "ether_frame.h"
 #include "log.h"
 #include "ndp_waiting_list.h"
@@ -39,7 +40,11 @@ int process_ipv6_packet(ether_frame_t *ether_frame) {
 
     if (decrement_hop_limit(ip6_header) == 0) {
         log_stdout("IP packet is time exceeded.\n");
-        //TODO: send ICMPv6 time exceed
+        ether_frame_t *time_exceeded_frame;
+        if ((time_exceeded_frame = create_icmpv6_error(ether_frame, ICMP6_TIME_EXCEEDED, ICMP6_TIME_EXCEED_TRANSIT)) == NULL) {
+            return -1;
+        }
+        enqueue_send_queue(time_exceeded_frame);
         return -1;
     }
 

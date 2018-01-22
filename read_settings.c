@@ -64,6 +64,16 @@ int parse_settings(settings_t *settings, xml_node_t *root) {
                 }
                 log_node = log_node->next;
             }
+        } else if (strcmp(node->name, "ICMPv6RateLimit") == 0) {
+            xml_node_t *ratelimit_node = node->children;
+            while (ratelimit_node != NULL) {
+                if (strcmp(ratelimit_node->name, "Bucket") == 0) {
+                    settings->ratelimit.bucket = atoi(ratelimit_node->children->content);
+                } else if (strcmp(ratelimit_node->name, "TokenPerSecond") == 0) {
+                    settings->ratelimit.token_per_second = atoi(ratelimit_node->children->content);
+                }
+                ratelimit_node = ratelimit_node->next;
+            }
         }
         node = node->next;
     }

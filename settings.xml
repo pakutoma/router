@@ -71,7 +71,11 @@
     <NextRouterAddress>192.168.20.1</NextRouterAddress>
     <NextRouterIPv6Address>2001:db8:2::1</NextRouterIPv6Address>
     <LogMode>
-        <EnableLogStdout>false</EnableLogStdout>
+        <EnableLogStdout>true</EnableLogStdout>
         <EnableLogError>true</EnableLogError>
     </LogMode>
+    <ICMPv6RateLimit>
+        <Bucket>10</Bucket>
+        <TokenPerSecond>10</TokenPerSecond>
+    </ICMPv6RateLimit>
 </Settings>

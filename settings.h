@@ -54,12 +54,18 @@ typedef struct {
 } log_mode_t;
 
 typedef struct {
+    uint32_t bucket;
+    uint32_t token_per_second;
+} ratelimit_t;
+
+typedef struct {
     struct in_addr next_router_addr;
     struct in6_addr next_router_ipv6_addr;
     uint32_t gateway_device_index;
     device_t *devices;
     uint32_t devices_length;
     log_mode_t log_mode;
+    ratelimit_t ratelimit;
 } settings_t;
 
 device_t *find_device_by_macaddr(uint8_t macaddr[ETH_ALEN]);
@@ -74,3 +80,5 @@ uint32_t get_devices_length();
 struct in_addr get_next_router_addr();
 struct in6_addr get_next_router_ipv6_addr();
 uint32_t get_gateway_device_index();
+uint32_t get_ratelimit_bucket();
+uint32_t get_ratelimit_token_per_second();

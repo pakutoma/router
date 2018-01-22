@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include "arp_table.h"
 #include "arp_waiting_list.h"
+#include "create_icmpv6.h"
 #include "create_ndp.h"
 #include "ether_frame.h"
 #include "event.h"
@@ -63,6 +64,7 @@ int route() {
             read(sec_timer_fd, &t, sizeof(uint64_t));
             remove_timeout_cache();
             update_status();
+            icmpv6_token_bucket_add_token();
             for (size_t i = 0; i < get_devices_length(); i++) {
                 uint32_t min = get_device(i)->adv_settings.min_rtr_adv_interval;
                 uint32_t max = get_device(i)->adv_settings.max_rtr_adv_interval;
@@ -86,7 +88,7 @@ int route() {
         }
     }
 
-    //上のループは抜けないが一応free
+    //上のループは抜けない
     for (size_t i = 0; i < UIO_MAXIOV; i++) {
         free(mmsg_hdrs[i].msg_hdr.msg_iov->iov_base);
         free(mmsg_hdrs[i].msg_hdr.msg_iov);
@@ -117,6 +119,7 @@ int init_route() {
     if (init_receive_queue() == -1) {
         return -1;
     }
+    icmpv6_token_bucket_init();
 
     for (int i = 0; i < get_devices_length(); i++) {
         if (add_event(get_device(i)->sock_desc, EPOLLIN) == -1) {
