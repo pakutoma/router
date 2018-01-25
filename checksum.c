@@ -31,11 +31,11 @@ uint16_t calc_icmp6_checksum(struct ip6_hdr *ip6_header) {
     ptr = (uint16_t *)&ip6_header->ip6_dst;
     sum = loop_checksum(sum, ptr, 16);
 
-    uint32_t payload_length = ip6_header->ip6_plen; /* 実ヘッダは16ビット、仮想ヘッダは32ビット */
+    volatile uint32_t payload_length = (uint32_t)ip6_header->ip6_plen; /* 実ヘッダは16ビット、仮想ヘッダは32ビット */
     ptr = (uint16_t *)&payload_length;
     sum = loop_checksum(sum, ptr, 4);
 
-    uint32_t next_header = htons(58);
+    volatile uint32_t next_header = (uint32_t)htons(58);
     ptr = (uint16_t *)&next_header;
     sum = loop_checksum(sum, ptr, 4);
 

@@ -19,7 +19,7 @@ int init_event() {
 }
 
 int add_event(int fd, int flag) {
-    struct epoll_event ev;
+    struct epoll_event ev = {0};
     ev.data.fd = fd;
     ev.events = flag;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) {
@@ -30,7 +30,7 @@ int add_event(int fd, int flag) {
 }
 
 int modify_event(int fd, int flag) {
-    struct epoll_event ev;
+    struct epoll_event ev = {0};
     ev.data.fd = fd;
     ev.events = flag;
     if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, fd, &ev) == -1) {

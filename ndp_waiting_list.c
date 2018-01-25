@@ -43,7 +43,7 @@ int delete_destination_unreachable_nodes(struct in6_addr *unreachable_ipaddr) {
     ndp_waiting_node_t *node = head;
     ndp_waiting_node_t *deleting_node = NULL;
     while (node->next != NULL) {
-        if (memcmp(node->next->neighbor_ipaddr.s6_addr, unreachable_ipaddr->s6_addr, sizeof(uint8_t) * INET6_ADDRSTRLEN) == 0) {
+        if (memcmp(node->next->neighbor_ipaddr.s6_addr, unreachable_ipaddr->s6_addr, sizeof(uint8_t) * 16) == 0) {
             deleting_node = node->next;
             node->next = node->next->next;
 
