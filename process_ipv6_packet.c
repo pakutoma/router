@@ -1,5 +1,6 @@
 #include "create_icmpv6.h"
 #include "ether_frame.h"
+#include "ipv6_fragment.h"
 #include "log.h"
 #include "ndp_waiting_list.h"
 #include "neighbor_cache.h"
@@ -26,11 +27,35 @@ int process_ipv6_packet(ether_frame_t *ether_frame) {
     }
 
     struct ip6_hdr *ip6_header = (struct ip6_hdr *)ether_frame->payload;
+
     if (ip6_header->ip6_nxt == TYPE_ICMPV6) {
         struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
         if (icmp6_header->icmp6_type >= ND_ROUTER_SOLICIT && icmp6_header->icmp6_type <= ND_NEIGHBOR_ADVERT) {
             return process_ndp_packet(ether_frame);
         }
+    }
+
+    if (is_my_device_ipv6addr(&ip6_header->ip6_dst)) {
+        if (exists_fragment_header(ether_frame)) {
+            if ((ether_frame = reassemble_fragment_packet(ether_frame)) == NULL) {
+                return 0;
+            }
+            ip6_header = (struct ip6_hdr *)ether_frame->payload;
+        }
+        if (ip6_header->ip6_nxt == TYPE_ICMPV6) {
+            struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
+            if (icmp6_header->icmp6_type == ICMP6_ECHO_REQUEST) {
+                if ((ether_frame = create_icmpv6_echo_reply(ether_frame)) == NULL) {
+                    return -1;
+                }
+                if (ether_frame->payload_size > 1280) {
+                    send_large_frame(ether_frame, 1280);
+                } else {
+                    enqueue_send_queue(ether_frame);
+                }
+            }
+        }
+        return 0;
     }
 
     if (is_linklocal(ip6_header)) {
@@ -41,7 +66,7 @@ int process_ipv6_packet(ether_frame_t *ether_frame) {
     if (decrement_hop_limit(ip6_header) == 0) {
         log_stdout("IP packet is time exceeded.\n");
         ether_frame_t *time_exceeded_frame;
-        if ((time_exceeded_frame = create_icmpv6_error(ether_frame, ICMP6_TIME_EXCEEDED, ICMP6_TIME_EXCEED_TRANSIT)) == NULL) {
+        if ((time_exceeded_frame = create_icmpv6_error(ether_frame, ICMP6_TIME_EXCEEDED, ICMP6_TIME_EXCEED_TRANSIT, 0)) == NULL) {
             return -1;
         }
         enqueue_send_queue(time_exceeded_frame);

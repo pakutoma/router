@@ -79,3 +79,28 @@ ether_frame_t *create_icmpv6_error(ether_frame_t *received_frame, uint8_t type, 
     icmp6_header->icmp6_cksum = calc_icmp6_checksum(ip6_header);
     return icmp6_frame;
 }
+
+// unicast only
+ether_frame_t *create_icmpv6_echo_reply(ether_frame_t *received_frame) {
+    uint8_t ether_addr[ETH_ALEN];
+    memcpy(ether_addr, received_frame->header.ether_dhost, ETH_ALEN * sizeof(uint8_t));
+    memcpy(received_frame->header.ether_dhost, received_frame->header.ether_shost, ETH_ALEN * sizeof(uint8_t));
+    memcpy(received_frame->header.ether_shost, ether_addr, ETH_ALEN * sizeof(uint8_t));
+
+    struct ip6_hdr *ip6_header = (struct ip6_hdr *)received_frame->payload;
+
+    struct in6_addr ipaddr;
+    ipaddr = ip6_header->ip6_src;
+    ip6_header->ip6_src = ip6_header->ip6_dst;
+    ip6_header->ip6_dst = ipaddr;
+    ip6_header->ip6_hlim = 0xFF;
+    ip6_header->ip6_flow = 0;
+    ip6_header->ip6_vfc = 6 << 4 | 0;
+
+    struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
+    icmp6_header->icmp6_type = ICMP6_ECHO_REPLY;
+    icmp6_header->icmp6_code = 0;
+    icmp6_header->icmp6_cksum = 0;
+    icmp6_header->icmp6_cksum = calc_icmp6_checksum(ip6_header);
+    return received_frame;
+}

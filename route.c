@@ -5,6 +5,7 @@
 #include "create_ndp.h"
 #include "ether_frame.h"
 #include "event.h"
+#include "ipv6_fragment.h"
 #include "log.h"
 #include "ndp_waiting_list.h"
 #include "neighbor_cache.h"
@@ -65,6 +66,7 @@ int route() {
             remove_timeout_cache();
             update_status();
             icmpv6_token_bucket_add_token();
+            count_reassembly_time();
             for (size_t i = 0; i < get_devices_length(); i++) {
                 uint32_t min = get_device(i)->adv_settings.min_rtr_adv_interval;
                 uint32_t max = get_device(i)->adv_settings.max_rtr_adv_interval;
@@ -117,6 +119,9 @@ int init_route() {
         return -1;
     }
     if (init_receive_queue() == -1) {
+        return -1;
+    }
+    if (init_reassembly_list() == -1) {
         return -1;
     }
     icmpv6_token_bucket_init();

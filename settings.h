@@ -73,6 +73,7 @@ device_t *find_device_by_ipaddr(uint32_t ipaddr);
 device_t *find_device_by_ipv6addr(struct in6_addr *ipaddr);
 int find_device_index_by_macaddr(uint8_t macaddr[ETH_ALEN]);
 int find_device_index_by_sock_desc(int sock_desc);
+bool is_my_device_ipv6addr(struct in6_addr *ipaddr);
 int init_settings(char *filepath);
 uint8_t calc_netmask(int count, int maskbit);
 device_t *get_device(int index);

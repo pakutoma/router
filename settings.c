@@ -109,6 +109,17 @@ device_t *find_device_by_ipv6addr(struct in6_addr *ipaddr) {
     return NULL;
 }
 
+bool is_my_device_ipv6addr(struct in6_addr *ipaddr) {
+    for (int i = 0; i < settings.devices_length; i++) {
+        for (size_t j = 0; j < settings.devices[i].addr6_list_length; j++) {
+            if (memcmp(settings.devices[i].addr6_list[j].s6_addr, ipaddr->s6_addr, 16 * sizeof(uint8_t)) == 0) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 int find_device_index_by_macaddr(uint8_t macaddr[ETH_ALEN]) {
     for (int i = 0; i < settings.devices_length; i++) {
         if (memcmp(settings.devices[i].hw_addr, macaddr, sizeof(uint8_t) * ETH_ALEN) == 0) {
