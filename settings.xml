@@ -67,6 +67,39 @@
                 <AdvDNSSearchSuffix>example.net</AdvDNSSearchSuffix>
             </AdvDNSSearchList>
         </Interface>
+		<Interface>
+            <InterfaceName>enp0s9</InterfaceName>
+            <IPv6AddressList>
+                <IPv6Address>2001:db8:3::1/64</IPv6Address>
+            </IPv6AddressList>
+            <IsRouter>true</IsRouter>
+            <AdvSendAdvertisements>true</AdvSendAdvertisements>
+            <MaxRtrAdvInterval>600</MaxRtrAdvInterval>
+            <MinRtrAdvInterval>200</MinRtrAdvInterval>
+            <AdvManagedFlag>false</AdvManagedFlag>
+            <AdvOtherConfigFlag>false</AdvOtherConfigFlag>
+            <AdvLinkMTU>0</AdvLinkMTU>
+            <AdvReachableTime>0</AdvReachableTime>
+            <AdvRetransTimer>0</AdvRetransTimer>
+            <AdvCurHopLimit>64</AdvCurHopLimit>
+            <AdvDefaultLifetime>1800</AdvDefaultLifetime>
+            <AdvPrefixList>
+                <AdvPrefix>
+                    <AdvAddressPrefix>2001:db8:3::/64</AdvAddressPrefix>
+                    <AdvValidLifetime>2592000</AdvValidLifetime>
+                    <AdvOnLinkFlag>true</AdvOnLinkFlag>
+                    <AdvPreferredLifetime>604800</AdvPreferredLifetime>
+                    <AdvAutonomousFlag>true</AdvAutonomousFlag>
+                </AdvPrefix>
+            </AdvPrefixList>
+            <AdvRecursiveDNSServerList>
+                <AdvRecursiveDNSServer>2001:db8:3::6</AdvRecursiveDNSServer>
+                <AdvRecursiveDNSServer>2001:db8:3::7</AdvRecursiveDNSServer>
+            </AdvRecursiveDNSServerList>
+            <AdvDNSSearchList>
+                <AdvDNSSearchSuffix>example.jp</AdvDNSSearchSuffix>
+            </AdvDNSSearchList>
+        </Interface>
     </Interfaces>
     <NextRouterAddress>192.168.20.1</NextRouterAddress>
     <NextRouterIPv6Address>2001:db8:2::1</NextRouterIPv6Address>

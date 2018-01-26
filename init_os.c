@@ -11,18 +11,11 @@ int init_os() {
     fputs("0", fp);
     fclose(fp);
 
-    if ((fp = fopen("/proc/sys/net/ipv6/conf/all/accept_ra", "w")) == NULL) {
-        log_error("couldn't write /proc/sys/net/ipv6/conf/all/accept_ra.\n");
+    if ((fp = fopen("/proc/sys/net/ipv6/conf/all/disable_ipv6", "w")) == NULL) {
+        log_error("couldn't write /proc/sys/net/ipv6/conf/all/disable_ipv6.\n");
         return -1;
     }
-    fputs("0", fp);
-    fclose(fp);
-
-    if ((fp = fopen("/proc/sys/net/ipv6/conf/all/accept_redirects", "w")) == NULL) {
-        log_error("couldn't write /proc/sys/net/ipv6/conf/all/accept_redirects.\n");
-        return -1;
-    }
-    fputs("0", fp);
+    fputs("1", fp);
     fclose(fp);
 
     return 0;

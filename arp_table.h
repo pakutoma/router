@@ -1,5 +1,6 @@
 #pragma once
 #include <net/ethernet.h>
+#include <stdint.h>
 int init_arp_table();
 int register_arp_table(uint32_t ipaddr, uint8_t macaddr[ETH_ALEN]);
 int find_macaddr(uint32_t ipaddr, uint8_t macaddr[ETH_ALEN]);
