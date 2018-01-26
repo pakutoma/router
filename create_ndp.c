@@ -266,9 +266,9 @@ ether_frame_t *create_neighbor_advertisement(int device_index, bool is_reply, st
     ip6_header->ip6_hlim = 0xFF;
     ip6_header->ip6_vfc = 6 << 4 | 0;
 
-    memcpy(ip6_header->ip6_src.s6_addr, device->addr6_list[0].s6_addr, INET_ADDRSTRLEN);
+    memcpy(ip6_header->ip6_src.s6_addr, target_ipaddr->s6_addr, 16);
     if (is_reply) {
-        memcpy(ip6_header->ip6_dst.s6_addr, ipaddr->s6_addr, INET_ADDRSTRLEN);
+        memcpy(ip6_header->ip6_dst.s6_addr, ipaddr->s6_addr, 16);
     } else {
         inet_pton(AF_INET6, "ff02::1:ffff:ffff", &ip6_header->ip6_dst);
         ip6_header->ip6_dst.s6_addr[13] = ipaddr->s6_addr[13];
@@ -285,7 +285,7 @@ ether_frame_t *create_neighbor_advertisement(int device_index, bool is_reply, st
     } else {
         na_header->nd_na_flags_reserved = ND_NA_FLAG_ROUTER | ND_NA_FLAG_OVERRIDE;
     }
-    memcpy(na_header->nd_na_target.s6_addr, target_ipaddr->s6_addr, INET_ADDRSTRLEN);
+    memcpy(na_header->nd_na_target.s6_addr, target_ipaddr->s6_addr, 16);
 
     struct nd_opt_hdr *linklayer_header = (struct nd_opt_hdr *)(na_header + 1);
     linklayer_header->nd_opt_type = ND_OPT_SOURCE_LINKADDR;

@@ -34,7 +34,7 @@ int process_ndp_packet(ether_frame_t *ether_frame) {
 bool exists_target_ipv6addr(int index, struct in6_addr *target_addr) {
     device_t *device = get_device(index);
     for (size_t i = 0; i < device->addr6_list_length; i++) {
-        if (memcmp(target_addr->s6_addr, device->addr6_list[i].s6_addr, INET_ADDRSTRLEN) == 0) {
+        if (memcmp(target_addr->s6_addr, device->addr6_list[i].s6_addr, 16) == 0) {
             return true;
         }
     }

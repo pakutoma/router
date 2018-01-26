@@ -66,8 +66,8 @@ ether_frame_t *create_icmpv6_error(ether_frame_t *received_frame, uint8_t type, 
     ip6_header->ip6_hlim = 0xFF;
     ip6_header->ip6_vfc = 6 << 4 | 0;
 
-    memcpy(ip6_header->ip6_src.s6_addr, device->addr6_list[0].s6_addr, sizeof(uint8_t) * INET_ADDRSTRLEN);
-    memcpy(ip6_header->ip6_dst.s6_addr, ((struct ip6_hdr *)received_frame->payload)->ip6_src.s6_addr, sizeof(uint8_t) * INET_ADDRSTRLEN);
+    memcpy(ip6_header->ip6_src.s6_addr, device->addr6_list[0].s6_addr, sizeof(uint8_t) * 16);
+    memcpy(ip6_header->ip6_dst.s6_addr, ((struct ip6_hdr *)received_frame->payload)->ip6_src.s6_addr, sizeof(uint8_t) * 16);
 
     struct icmp6_hdr *icmp6_header = (struct icmp6_hdr *)(ip6_header + 1);
     icmp6_header->icmp6_type = type;
