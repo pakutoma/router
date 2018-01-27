@@ -88,6 +88,18 @@ int init_raw_socket(char *device_name) {
         return -1;
     }
 
+    if (ioctl(sock_desc, SIOCGIFFLAGS, &ifreq) < 0) {
+        log_perror("ioctl");
+        close(sock_desc);
+        return -1;
+    }
+    ifreq.ifr_flags = ifreq.ifr_flags | IFF_PROMISC;
+    if (ioctl(sock_desc, SIOCSIFFLAGS, &ifreq) < 0) {
+        log_perror("ioctl");
+        close(sock_desc);
+        return -1;
+    }
+
     return sock_desc;
 }
 
