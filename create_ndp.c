@@ -266,7 +266,7 @@ ether_frame_t *create_neighbor_advertisement(int device_index, bool is_reply, st
     ip6_header->ip6_hlim = 0xFF;
     ip6_header->ip6_vfc = 6 << 4 | 0;
 
-    memcpy(ip6_header->ip6_src.s6_addr, target_ipaddr->s6_addr, 16);
+    memcpy(ip6_header->ip6_src.s6_addr, device->addr6_list[0].s6_addr, 16);
     if (is_reply) {
         memcpy(ip6_header->ip6_dst.s6_addr, ipaddr->s6_addr, 16);
     } else {
@@ -288,7 +288,7 @@ ether_frame_t *create_neighbor_advertisement(int device_index, bool is_reply, st
     memcpy(na_header->nd_na_target.s6_addr, target_ipaddr->s6_addr, 16);
 
     struct nd_opt_hdr *linklayer_header = (struct nd_opt_hdr *)(na_header + 1);
-    linklayer_header->nd_opt_type = ND_OPT_SOURCE_LINKADDR;
+    linklayer_header->nd_opt_type = ND_OPT_TARGET_LINKADDR;
     linklayer_header->nd_opt_len = 1;
     uint8_t *linklayer_address = (uint8_t *)(linklayer_header + 1);
     memcpy(linklayer_address, device->hw_addr, sizeof(uint8_t) * ETH_ALEN);
